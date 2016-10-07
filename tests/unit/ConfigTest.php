@@ -60,6 +60,11 @@ class ConfigTest extends \Codeception\Test\Unit
             verify($testModule2->getFiles(false))->equals(['test' => []]);
         });
 
+        $this->specify('it skips modules without files', function () {
+            verify($this->config->setPaths(['test' => []]))->same($this->config);
+            verify($this->config->getModule('test'))->null();
+        });
+
         $this->specify('it adds fallback files to a module if they exist', function ($paths, $expected) {
             $this->config->setPaths($paths);
             verify($this->config->getModule('test')->getFallbackFiles())->equals($expected);

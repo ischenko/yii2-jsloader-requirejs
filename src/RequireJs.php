@@ -96,7 +96,11 @@ class RequireJs extends Loader
             list(, $this->libraryUrl) = $assetManager->publish($this->libraryPath);
         }
 
-        $requireOptions = ['position' => View::POS_END];
+        $requireOptions = [
+            'defer' => 'defer',
+            'async' => 'async',
+            'position' => View::POS_END
+        ];
 
         if ($this->main === false) {
             $view->registerJs($code, $requireOptions['position']);

@@ -72,6 +72,9 @@ class RequireJsTest extends \Codeception\Test\Unit
         verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1]]))
             ->equals("require([\"mod2\",\"mod1\"], function(undefined,mod1) {\ntest;\n});");
 
+        verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1, '', true]]))
+            ->equals("require([\"mod2\",\"mod1\"], function(undefined,mod1) {\ntest;\n});");
+
         $mod1->setExports(null);
 
         verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1]]))
@@ -111,18 +114,18 @@ class RequireJsTest extends \Codeception\Test\Unit
                 $data = array_shift($exCodeBlocks);
 
                 if (isset($data['code'])) {
-                    verify($code)->equals($data['code']);
-                } else {
-                    verify($code)->equals('');
+                    verify($code)->contains($data['code']);
                 }
 
                 if (isset($data['depends'])) {
                     verify($depends)->equals($data['depends']);
-                } else {
-                    verify($depends)->equals([]);
                 }
+
+                return $code;
             }),
-            'publishRequireJs' => Stub::once()
+            'publishRequireJs' => Stub::once(function($code) {
+                verify($code)->equals("begin code block\nend code block\n\nload code block");
+            })
         ], $this);
 
         $doRender = $this->tester->getMethod($loader, 'doRender');
@@ -138,7 +141,11 @@ class RequireJsTest extends \Codeception\Test\Unit
                 'view' => $this->tester->mockView([
                     'registerJsFile' => Stub::once(function ($path, $options) {
                         verify($path)->equals('/require.js');
+                        verify($options)->hasKey('defer');
+                        verify($options)->hasKey('async');
                         verify($options)->hasKey('position');
+                        verify($options['defer'])->equals('defer');
+                        verify($options['async'])->equals('async');
                         verify($options['position'])->equals(View::POS_END);
                     }),
                     'assetManager' => Stub::makeEmpty('yii\web\AssetManager', [
