@@ -1,0 +1,47 @@
+language: php
+
+php:
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7.0
+  - hhvm
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: hhvm
+
+sudo: false
+
+cache:
+  directories:
+    - vendor
+
+install:
+  - |
+    if [ $TRAVIS_PHP_VERSION != '5.6' ]; then
+        phpenv config-rm xdebug.ini || echo "xdebug is not installed"
+    fi
+  - travis_retry composer self-update && composer --version
+  - travis_retry composer global require "fxp/composer-asset-plugin:~1.2"
+  - travis_retry composer install --prefer-dist --no-interaction
+
+before_script:
+  - |
+    if [ $TRAVIS_PHP_VERSION = '5.6' ]; then
+      CODECEPT_FLAGS="--coverage --coverage-xml coverage.xml"
+    fi
+
+script:
+  - vendor/bin/codecept run $CODECEPT_FLAGS
+
+after_script:
+  - |
+    if [ $TRAVIS_PHP_VERSION = '5.6' ]; then
+      vendor/bin/test-reporter --coverage-report tests/_output/coverage.xml
+    fi
+
+addons:
+  code_climate:
+    repo_token: ee08c3b550a075264b30caf5a1263c4294d290bf85389552a4d6805176d157f8

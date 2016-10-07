@@ -1,0 +1,10 @@
+# Codeception Test Suite Configuration
+#
+# Suite for unit (internal) tests.
+
+error_level: "E_ALL | E_STRICT"
+class_name: UnitTester
+modules:
+    enabled:
+        - Asserts
+        - \ischenko\yii2\jsloader\tests\Helper\Unit
