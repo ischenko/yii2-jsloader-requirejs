@@ -7,10 +7,8 @@
 
 namespace ischenko\yii2\jsloader;
 
-use Yii;
 use yii\web\View;
 use yii\helpers\Json;
-use yii\helpers\FileHelper;
 use ischenko\yii2\jsloader\base\Loader;
 use ischenko\yii2\jsloader\requirejs\Config;
 use ischenko\yii2\jsloader\requirejs\Module;
@@ -23,8 +21,6 @@ use ischenko\yii2\jsloader\requirejs\Module;
  */
 class RequireJs extends Loader
 {
-    const RUNTIME_PATH = '@runtime/jsloader';
-
     /**
      * @var string URL to be used to load the RequireJS library. If value is empty the loader will publish library from the bower package
      */
@@ -195,14 +191,7 @@ class RequireJs extends Loader
      */
     private function writeFileContent($filename, $content)
     {
-        static $runtimePath;
-
-        if ($runtimePath === null) {
-            $runtimePath = Yii::getAlias(self::RUNTIME_PATH);
-            FileHelper::createDirectory($runtimePath);
-        }
-
-        $filePath = $runtimePath . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $this->getRuntimePath() . DIRECTORY_SEPARATOR . $filename;
 
         if (@file_put_contents($filePath, $content, LOCK_EX) === false) {
             throw new \RuntimeException("Failed to write data into a file \"$filePath\"");

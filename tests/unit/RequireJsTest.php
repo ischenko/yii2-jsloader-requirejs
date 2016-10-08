@@ -276,7 +276,7 @@ class RequireJsTest extends \Codeception\Test\Unit
             ['/main.js', '/main.js', 0],
         ]]);
 
-        $file = \Yii::getAlias(RequireJs::RUNTIME_PATH) . '/requirejs-main.js';
+        $file = \Yii::getAlias('@runtime/jsloader') . '/requirejs-main.js';
 
         $this->afterSpecify(function () use ($file) {
             rmdir($file);
