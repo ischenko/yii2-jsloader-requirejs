@@ -25,6 +25,7 @@ install:
     fi
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:~1.2"
+  - travis_retry composer require "codeclimate/php-test-reporter:dev-master"
   - travis_retry composer install --prefer-dist --no-interaction
 
 before_script:

@@ -24,8 +24,7 @@
   "require-dev": {
     "codeception/verify": "*",
     "codeception/specify": "*",
-    "codeception/codeception": "2.2.*",
-    "codeclimate/php-test-reporter": "dev-master"
+    "codeception/codeception": "2.2.*"
   },
   "repositories": [
     {
