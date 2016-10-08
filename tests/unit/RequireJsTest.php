@@ -58,7 +58,9 @@ class RequireJsTest extends \Codeception\Test\Unit
         $loader = $this->mockLoader();
         $renderRequireBlock = $this->tester->getMethod($loader, 'renderRequireBlock');
 
-        verify($renderRequireBlock->invokeArgs($loader, ['', []]))->equals('');
+        verify($renderRequireBlock->invokeArgs($loader, ['', []]))
+            ->equals("require([], function() {\n\n});");
+
         verify($renderRequireBlock->invokeArgs($loader, ['test;', []]))
             ->equals("require([], function() {\ntest;\n});");
 
@@ -109,8 +111,10 @@ class RequireJsTest extends \Codeception\Test\Unit
 
         krsort($exCodeBlocks);
 
+        unset($exCodeBlocks[View::POS_READY]);
+
         $loader = $this->mockLoader([
-            'renderRequireBlock' => Stub::exactly(4, function ($code, $depends) use (&$exCodeBlocks) {
+            'renderRequireBlock' => Stub::exactly(3, function ($code, $depends) use (&$exCodeBlocks) {
                 $data = array_shift($exCodeBlocks);
 
                 if (isset($data['code'])) {
@@ -124,13 +128,33 @@ class RequireJsTest extends \Codeception\Test\Unit
                 return $code;
             }),
             'publishRequireJs' => Stub::once(function($code) {
-                verify($code)->equals("begin code block\nend code block\n\nload code block");
+                verify($code)->equals("begin code block\nend code block\nload code block");
             })
         ], $this);
 
         $doRender = $this->tester->getMethod($loader, 'doRender');
 
         $doRender->invokeArgs($loader, [$codeBlocks]);
+
+        $this->specify('it encloses code from POS_READY position within jQuery.ready method', function () {
+            $codeBlocks = [
+                View::POS_READY => [
+                    'code' => 'ready code block'
+                ]
+            ];
+
+            $loader = $this->mockLoader([
+                'publishRequireJs' => Stub::once(function($code) {
+                    verify($code)->equals("require([], function() {\njQuery(document).ready(function() {\nready code block\n});\n});");
+                })
+            ], $this);
+
+            $doRender = $this->tester->getMethod($loader, 'doRender');
+
+            $doRender->invokeArgs($loader, [$codeBlocks]);
+
+            $this->verifyMockObjects();
+        });
     }
 
     public function testPublishRequireJs()
@@ -141,11 +165,9 @@ class RequireJsTest extends \Codeception\Test\Unit
                 'view' => $this->tester->mockView([
                     'registerJsFile' => Stub::once(function ($path, $options) {
                         verify($path)->equals('/require.js');
-                        verify($options)->hasKey('defer');
-                        verify($options)->hasKey('async');
                         verify($options)->hasKey('position');
-                        verify($options['defer'])->equals('defer');
-                        verify($options['async'])->equals('async');
+                        verify($options)->hasntKey('defer');
+                        verify($options)->hasntKey('async');
                         verify($options['position'])->equals(View::POS_END);
                     }),
                     'assetManager' => Stub::makeEmpty('yii\web\AssetManager', [
@@ -171,6 +193,8 @@ class RequireJsTest extends \Codeception\Test\Unit
                 'view' => $this->tester->mockView([
                     'registerJsFile' => Stub::once(function ($path, $options) {
                         verify($path)->equals('/requirejs.js');
+                        verify($options)->hasntKey('async');
+                        verify($options)->hasntKey('defer');
                     }),
                     'assetManager' => Stub::makeEmpty('yii\web\AssetManager', [
                         'publish' => Stub::never()
@@ -224,6 +248,8 @@ class RequireJsTest extends \Codeception\Test\Unit
                     'registerJsFile' => Stub::once(function ($file, $options) use ($expectedMain) {
                         verify($file)->equals('/require.js');
                         verify($options)->hasKey('position');
+                        verify($options)->hasKey('async');
+                        verify($options)->hasKey('defer');
                         verify($options['position'])->equals(View::POS_END);
                         verify($options)->hasKey('data-main');
                         verify($options['data-main'])->equals($expectedMain);

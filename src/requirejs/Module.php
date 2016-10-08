@@ -20,12 +20,12 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     /**
      * @var string
      */
-    private $_exports;
+    private $exports;
 
     /**
      * @var array
      */
-    private $_fallbackFiles = [];
+    private $fallbackFiles = [];
 
     /**
      * Sets value for the exports section of shim config
@@ -40,14 +40,14 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     public function setExports($exports)
     {
         if ($exports === null) {
-            $this->_exports = null;
+            $this->exports = null;
         } else {
             if (!is_string($exports)) {
                 throw new InvalidParamException('Exports must be a string');
             }
 
-            $this->_exports = trim($exports);
-            $this->_exports = $this->_exports ?: null;
+            $this->exports = trim($exports);
+            $this->exports = $this->exports ?: null;
         }
 
         return $this;
@@ -58,7 +58,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
      */
     public function getExports()
     {
-        return $this->_exports;
+        return $this->exports;
     }
 
     /**
@@ -78,9 +78,9 @@ class Module extends \ischenko\yii2\jsloader\base\Module
      */
     public function addFallbackFiles(array $files)
     {
-        $this->_fallbackFiles = array_merge(
-            $this->_fallbackFiles, array_values(array_map([$this, 'removeJsExtension'], $files))
-        );
+        foreach ($files as $file) {
+            $this->fallbackFiles[] = $this->removeJsExtension($file);
+        }
 
         return $this;
     }
@@ -92,7 +92,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
      */
     public function clearFallbackFiles()
     {
-        $this->_fallbackFiles = [];
+        $this->fallbackFiles = [];
 
         return $this;
     }
@@ -102,7 +102,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
      */
     public function getFallbackFiles()
     {
-        return $this->_fallbackFiles;
+        return $this->fallbackFiles;
     }
 
     /**

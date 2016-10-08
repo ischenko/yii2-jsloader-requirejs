@@ -70,9 +70,17 @@ class RequireJs extends Loader
 
         krsort($codeBlocks);
 
-        foreach ($codeBlocks as $codeBlock) {
+        foreach ($codeBlocks as $position => $codeBlock) {
             $code = isset($codeBlock['code']) ? $codeBlock['code'] : '';
             $depends = isset($codeBlock['depends']) ? $codeBlock['depends'] : [];
+
+            if (empty($code)) {
+                continue;
+            }
+
+            if ($position == View::POS_READY) {
+                $code = $this->encloseJqueryReady($code);
+            }
 
             if (!empty($rjsCode)) {
                 $code = "{$code}\n{$rjsCode}";
@@ -97,14 +105,14 @@ class RequireJs extends Loader
         }
 
         $requireOptions = [
-            'defer' => 'defer',
-            'async' => 'async',
             'position' => View::POS_END
         ];
 
         if ($this->main === false) {
             $view->registerJs($code, $requireOptions['position']);
         } else {
+            $requireOptions['async'] = 'async';
+            $requireOptions['defer'] = 'defer';
             $requireOptions['data-main'] = trim($this->main);
 
             if (empty($requireOptions['data-main'])) {
@@ -138,10 +146,6 @@ class RequireJs extends Loader
      */
     protected function renderRequireBlock($code, array $depends)
     {
-        if (empty($code)) {
-            return '';
-        }
-
         $pad = 0;
         $injects = [];
         $modules = [];
@@ -169,6 +173,16 @@ class RequireJs extends Loader
         }
 
         return 'require([' . implode(',', $modules) . '], function(' . implode(',', $injects) . ") {\n{$code}\n});";
+    }
+
+    /**
+     * @param string $code
+     *
+     * @return string
+     */
+    private function encloseJqueryReady($code)
+    {
+        return "jQuery(document).ready(function() {\n{$code}\n});";
     }
 
     /**
