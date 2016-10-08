@@ -41,7 +41,7 @@ class RequireJs extends Loader
     /**
      * @var Config
      */
-    private $_config;
+    private $config;
 
     /**
      * @inheritDoc
@@ -50,11 +50,11 @@ class RequireJs extends Loader
      */
     public function getConfig()
     {
-        if (!$this->_config) {
-            $this->_config = new Config();
+        if (!$this->config) {
+            $this->config = new Config();
         }
 
-        return $this->_config;
+        return $this->config;
     }
 
     /**
@@ -67,10 +67,12 @@ class RequireJs extends Loader
         krsort($codeBlocks);
 
         foreach ($codeBlocks as $position => $codeBlock) {
-            $code = isset($codeBlock['code']) ? $codeBlock['code'] : '';
-            $depends = isset($codeBlock['depends']) ? $codeBlock['depends'] : [];
+            $codeBlock = array_merge(['code' => '', 'depends' => []], $codeBlock);
 
-            if (empty($code)) {
+            $code = $codeBlock['code'];
+            $depends = $codeBlock['depends'];
+
+            if (empty($codeBlock['code'])) {
                 continue;
             }
 
