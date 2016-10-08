@@ -134,7 +134,7 @@ class ConfigTest extends \Codeception\Test\Unit
         verify($this->config->toArray())->equals([
             'shim' => [
                 'test' => [
-                    'deps' => ['test2', 'test2', 'another_file']
+                    'deps' => ['test2', 'test2.js', 'another_file.js']
                 ],
                 'test2' => [
                     'exports' => 'library'

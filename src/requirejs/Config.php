@@ -54,7 +54,7 @@ class Config extends \ischenko\yii2\jsloader\base\Config
                 }
 
                 foreach ($files as $file) {
-                    $shimConfig['deps'][] = $file;
+                    $shimConfig['deps'][] = $file . '.js';
                 }
             }
 

@@ -63,18 +63,14 @@ class RequireJs extends Loader
     protected function doRender(array $codeBlocks)
     {
         $rjsCode = '';
-
-        krsort($codeBlocks);
+        $codeBlocks = $this->prepareCodeBlocks($codeBlocks);
 
         foreach ($codeBlocks as $position => $codeBlock) {
-            $codeBlock = array_merge(['code' => '', 'depends' => []], $codeBlock);
+            $codeBlock = array_merge([
+                'code' => '', 'depends' => []
+            ], $codeBlock);
 
             $code = $codeBlock['code'];
-            $depends = $codeBlock['depends'];
-
-            if (empty($codeBlock['code'])) {
-                continue;
-            }
 
             if ($position == View::POS_READY) {
                 $code = $this->encloseJqueryReady($code);
@@ -84,7 +80,7 @@ class RequireJs extends Loader
                 $code = "{$code}\n{$rjsCode}";
             }
 
-            $rjsCode = $this->renderRequireBlock($code, (array)$depends);
+            $rjsCode = $this->renderRequireBlock($code, $codeBlock['depends']);
         }
 
         $this->publishRequireJs($rjsCode);
@@ -144,6 +140,10 @@ class RequireJs extends Loader
      */
     protected function renderRequireBlock($code, array $depends)
     {
+        if (empty($code) && empty($depends)) {
+            return '';
+        }
+
         $pad = 0;
         $injects = [];
         $modules = [];
@@ -170,7 +170,13 @@ class RequireJs extends Loader
             $modules[] = Json::encode($module->getName());
         }
 
-        return 'require([' . implode(',', $modules) . '], function(' . implode(',', $injects) . ") {\n{$code}\n});";
+        $requireBlock = 'require([' . implode(',', $modules) . ']';
+
+        if (!empty($code)) {
+            $requireBlock .= ', function(' . implode(',', $injects) . ") {\n{$code}\n}";
+        }
+
+        return $requireBlock . ');';
     }
 
     /**
@@ -181,6 +187,36 @@ class RequireJs extends Loader
     private function encloseJqueryReady($code)
     {
         return "jQuery(document).ready(function() {\n{$code}\n});";
+    }
+
+    /**
+     * @param array $codeBlocks
+     * @return array
+     */
+    private function prepareCodeBlocks(array $codeBlocks)
+    {
+        krsort($codeBlocks);
+
+        for ($i = View::POS_HEAD; $i <= View::POS_LOAD; $i++) {
+            if (!isset($codeBlocks[$i], $codeBlocks[$i + 1])) {
+                continue;
+            }
+
+            $src = &$codeBlocks[$i];
+            $dst = &$codeBlocks[$i + 1];
+
+            if (empty($src['code']) && !empty($src['depends'])) {
+                if (!isset($dst['depends'])) {
+                    $dst['depends'] = [];
+                }
+
+                $dst['depends'] = array_merge($src['depends'], $dst['depends']);
+
+                unset($codeBlocks[$i]);
+            }
+        }
+
+        return $codeBlocks;
     }
 
     /**

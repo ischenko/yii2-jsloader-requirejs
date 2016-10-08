@@ -59,7 +59,7 @@ class RequireJsTest extends \Codeception\Test\Unit
         $renderRequireBlock = $this->tester->getMethod($loader, 'renderRequireBlock');
 
         verify($renderRequireBlock->invokeArgs($loader, ['', []]))
-            ->equals("require([], function() {\n\n});");
+            ->equals('');
 
         verify($renderRequireBlock->invokeArgs($loader, ['test;', []]))
             ->equals("require([], function() {\ntest;\n});");
@@ -70,6 +70,9 @@ class RequireJsTest extends \Codeception\Test\Unit
         $mod2 = $cfg->addModule('mod2');
 
         $mod1->setExports('mod1');
+
+        verify($renderRequireBlock->invokeArgs($loader, ['', [$mod2]]))
+            ->equals("require([\"mod2\"]);");
 
         verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1]]))
             ->equals("require([\"mod2\",\"mod1\"], function(undefined,mod1) {\ntest;\n});");
@@ -109,25 +112,11 @@ class RequireJsTest extends \Codeception\Test\Unit
             ],
         ];
 
-        krsort($exCodeBlocks);
-
-        unset($exCodeBlocks[View::POS_READY]);
-
         $loader = $this->mockLoader([
-            'renderRequireBlock' => Stub::exactly(3, function ($code, $depends) use (&$exCodeBlocks) {
-                $data = array_shift($exCodeBlocks);
-
-                if (isset($data['code'])) {
-                    verify($code)->contains($data['code']);
-                }
-
-                if (isset($data['depends'])) {
-                    verify($depends)->equals($data['depends']);
-                }
-
+            'renderRequireBlock' => Stub::exactly(3, function ($code) {
                 return $code;
             }),
-            'publishRequireJs' => Stub::once(function($code) {
+            'publishRequireJs' => Stub::once(function ($code) {
                 verify($code)->equals("begin code block\nend code block\nload code block");
             })
         ], $this);
@@ -144,8 +133,51 @@ class RequireJsTest extends \Codeception\Test\Unit
             ];
 
             $loader = $this->mockLoader([
-                'publishRequireJs' => Stub::once(function($code) {
+                'publishRequireJs' => Stub::once(function ($code) {
                     verify($code)->equals("require([], function() {\njQuery(document).ready(function() {\nready code block\n});\n});");
+                })
+            ], $this);
+
+            $doRender = $this->tester->getMethod($loader, 'doRender');
+
+            $doRender->invokeArgs($loader, [$codeBlocks]);
+
+            $this->verifyMockObjects();
+        });
+
+        $this->specify('it accumulates dependencies for next position in case if code from current position is empty', function () {
+            $codeBlocks = [
+                View::POS_BEGIN => [
+                    'code' => 'begin code block',
+                ],
+                View::POS_END => [
+                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
+                ],
+                View::POS_READY => [
+                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
+                ],
+                View::POS_LOAD => [
+                    'code' => 'load code block',
+                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
+                ],
+            ];
+
+            $i = 0;
+
+            $loader = $this->mockLoader([
+                'publishRequireJs' => null,
+                'renderRequireBlock' => Stub::exactly(2, function ($code, $depends) use (&$i, $codeBlocks) {
+                    switch ($i) {
+                        case 0:
+                            verify($depends)->equals([
+                                $codeBlocks[View::POS_READY]['depends'][0],
+                                $codeBlocks[View::POS_END]['depends'][0],
+                                $codeBlocks[View::POS_LOAD]['depends'][0]
+                            ]);
+                            break;
+                    }
+
+                    $i++;
                 })
             ], $this);
 
