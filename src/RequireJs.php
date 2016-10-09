@@ -44,8 +44,6 @@ class RequireJs extends Loader
     private $config;
 
     /**
-     * @inheritDoc
-     *
      * @return Config
      */
     public function getConfig()
@@ -58,7 +56,9 @@ class RequireJs extends Loader
     }
 
     /**
-     * @inheritDoc
+     * Performs actual rendering of the JS loader
+     *
+     * @param array $codeBlocks a list of js code blocks indexed by position
      */
     protected function doRender(array $codeBlocks)
     {

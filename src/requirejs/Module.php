@@ -62,7 +62,13 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     }
 
     /**
-     * @inheritDoc
+     * Adds JS file into a module
+     *
+     * @param string $file URL of a file
+     * @param array $options options for given file
+     *
+     * @return $this
+     * @throws InvalidParamException
      */
     public function addFile($file, $options = [])
     {

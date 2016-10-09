@@ -21,7 +21,9 @@ use ischenko\yii2\jsloader\ModuleInterface;
 class Config extends \ischenko\yii2\jsloader\base\Config
 {
     /**
-     * @inheritDoc
+     * Builds configuration set into an array
+     *
+     * @return array
      */
     public function toArray()
     {
@@ -75,7 +77,11 @@ class Config extends \ischenko\yii2\jsloader\base\Config
     }
 
     /**
-     * @inheritDoc
+     * Adds new module into configuration
+     *
+     * If passed a string a new module will be created
+     *
+     * @param ModuleInterface|string $module an instance of module to be added or name of a module to be created and added
      *
      * @return Module
      */
