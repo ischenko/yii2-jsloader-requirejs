@@ -3,6 +3,7 @@
 namespace ischenko\yii2\jsloader\tests\unit\requirejs;
 
 use Codeception\Util\Stub;
+use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\RequireJs;
 use yii\web\View;
 
@@ -53,140 +54,53 @@ class RequireJsTest extends \Codeception\Test\Unit
         verify($config)->same($loader->getConfig());
     }
 
-    public function testRenderRequireBlock()
+    /**
+     * @dataProvider doRenderDataProvider
+     */
+    public function testDoRender($expressions, $expected)
     {
-        $loader = $this->mockLoader();
-        $renderRequireBlock = $this->tester->getMethod($loader, 'renderRequireBlock');
-
-        verify($renderRequireBlock->invokeArgs($loader, ['', []]))
-            ->equals('');
-
-        verify($renderRequireBlock->invokeArgs($loader, ['test;', []]))
-            ->equals("require([], function() {\ntest;\n});");
-
-        $cfg = $loader->getConfig();
-
-        $mod1 = $cfg->addModule('mod1');
-        $mod2 = $cfg->addModule('mod2');
-
-        $mod1->setExports('mod1');
-
-        verify($renderRequireBlock->invokeArgs($loader, ['', [$mod2]]))
-            ->equals("require([\"mod2\"]);");
-
-        verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1]]))
-            ->equals("require([\"mod2\",\"mod1\"], function(undefined,mod1) {\ntest;\n});");
-
-        verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1, '', true]]))
-            ->equals("require([\"mod2\",\"mod1\"], function(undefined,mod1) {\ntest;\n});");
-
-        $mod1->setExports(null);
-
-        verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1]]))
-            ->equals("require([\"mod2\",\"mod1\"], function() {\ntest;\n});");
-
-        $mod1->setExports('mod1');
-
-        $mod3 = $cfg->addModule('mod3');
-
-        verify($renderRequireBlock->invokeArgs($loader, ['test;', [$mod2, $mod1, $mod3]]))
-            ->equals("require([\"mod2\",\"mod1\",\"mod3\"], function(undefined,mod1) {\ntest;\n});");
-    }
-
-    public function testDoRender()
-    {
-        $codeBlocks = $exCodeBlocks = [
-            View::POS_END => [
-                'code' => 'end code block',
-                'depends' => []
-            ],
-            View::POS_LOAD => [
-                'code' => 'load code block',
-                'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
-            ],
-            View::POS_BEGIN => [
-                'code' => 'begin code block',
-            ],
-            View::POS_READY => [
-                'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
-            ],
-        ];
-
         $loader = $this->mockLoader([
-            'renderRequireBlock' => Stub::exactly(3, function ($code) {
-                return $code;
-            }),
-            'publishRequireJs' => Stub::once(function ($code) {
-                verify($code)->equals("begin code block\nend code block\nload code block");
+            'publishRequireJs' => Stub::once(function ($code) use ($expected) {
+                verify($code)->equals($expected);
             })
         ], $this);
 
         $doRender = $this->tester->getMethod($loader, 'doRender');
 
-        $doRender->invokeArgs($loader, [$codeBlocks]);
+        $doRender->invokeArgs($loader, [$expressions]);
+    }
 
-        $this->specify('it encloses code from POS_READY position within jQuery.ready method', function () {
-            $codeBlocks = [
-                View::POS_READY => [
-                    'code' => 'ready code block'
-                ]
-            ];
-
-            $loader = $this->mockLoader([
-                'publishRequireJs' => Stub::once(function ($code) {
-                    verify($code)->equals("require([], function() {\njQuery(document).ready(function() {\nready code block\n});\n});");
-                })
-            ], $this);
-
-            $doRender = $this->tester->getMethod($loader, 'doRender');
-
-            $doRender->invokeArgs($loader, [$codeBlocks]);
-
-            $this->verifyMockObjects();
-        });
-
-        $this->specify('it accumulates dependencies for next position in case if code from current position is empty', function () {
-            $codeBlocks = [
-                View::POS_BEGIN => [
-                    'code' => 'begin code block',
+    public function doRenderDataProvider()
+    {
+        return [
+            [
+                [
+                    View::POS_END => new JsExpression('end code block'),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
+                    View::POS_BEGIN => new JsExpression('begin code block'),
+                    View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
                 ],
-                View::POS_END => [
-                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
+                "begin code block\nend code block\nrequire([\"\\/file1\"], function() {\n\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});"
+            ],
+            [
+                [
+                    View::POS_END => new JsExpression('end code block'),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
+                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'])]),
+                    View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
                 ],
-                View::POS_READY => [
-                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
+                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"\\/file1\"], function() {\n\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
+            ],
+            [
+                [
+                    View::POS_END => new JsExpression('end code block'),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
+                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'])]),
+                    View::POS_READY => new JsExpression(new JsExpression('test'), [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['ready'])]),
                 ],
-                View::POS_LOAD => [
-                    'code' => 'load code block',
-                    'depends' => [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]
-                ],
-            ];
-
-            $i = 0;
-
-            $loader = $this->mockLoader([
-                'publishRequireJs' => null,
-                'renderRequireBlock' => Stub::exactly(2, function ($code, $depends) use (&$i, $codeBlocks) {
-                    switch ($i) {
-                        case 0:
-                            verify($depends)->equals([
-                                $codeBlocks[View::POS_READY]['depends'][0],
-                                $codeBlocks[View::POS_END]['depends'][0],
-                                $codeBlocks[View::POS_LOAD]['depends'][0]
-                            ]);
-                            break;
-                    }
-
-                    $i++;
-                })
-            ], $this);
-
-            $doRender = $this->tester->getMethod($loader, 'doRender');
-
-            $doRender->invokeArgs($loader, [$codeBlocks]);
-
-            $this->verifyMockObjects();
-        });
+                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(document).ready(function() {\ntest\n});\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
+            ]
+        ];
     }
 
     public function testPublishRequireJs()

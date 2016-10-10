@@ -7,11 +7,13 @@
 
 namespace ischenko\yii2\jsloader;
 
+use ischenko\yii2\jsloader\requirejs\JsRenderer;
 use yii\web\View;
 use yii\helpers\Json;
 use ischenko\yii2\jsloader\base\Loader;
 use ischenko\yii2\jsloader\requirejs\Config;
 use ischenko\yii2\jsloader\requirejs\Module;
+use ischenko\yii2\jsloader\helpers\JsExpression;
 
 /**
  * RequireJS implementation
@@ -58,32 +60,33 @@ class RequireJs extends Loader
     /**
      * Performs actual rendering of the JS loader
      *
-     * @param array $codeBlocks a list of js code blocks indexed by position
+     * @param JsExpression[] $jsExpressions a list of js expressions indexed by position
      */
-    protected function doRender(array $codeBlocks)
+    protected function doRender(array $jsExpressions)
     {
-        $rjsCode = '';
-        $codeBlocks = $this->prepareCodeBlocks($codeBlocks);
+        krsort($jsExpressions);
 
-        foreach ($codeBlocks as $position => $codeBlock) {
-            $codeBlock = array_merge([
-                'code' => '', 'depends' => []
-            ], $codeBlock);
+        $resultJsCode = '';
 
-            $code = $codeBlock['code'];
+        foreach ($jsExpressions as $position => $jsExpression) {
+            if (!empty($resultJsCode)) {
+                $expression = $jsExpression;
 
-            if ($position == View::POS_READY) {
-                $code = $this->encloseJqueryReady($code);
+                while (($code = $expression->getExpression()) instanceof JsExpression) {
+                    $expression = $code;
+                }
+
+                if ($position === View::POS_READY && !empty($code)) {
+                    $code = $this->encloseJqueryReady($code);
+                }
+
+                $expression->setExpression("{$code}\n{$resultJsCode}");
             }
 
-            if (!empty($rjsCode)) {
-                $code = "{$code}\n{$rjsCode}";
-            }
-
-            $rjsCode = $this->renderRequireBlock($code, $codeBlock['depends']);
+            $resultJsCode = $jsExpression->render(new JsRenderer());
         }
 
-        $this->publishRequireJs($rjsCode);
+        $this->publishRequireJs($resultJsCode);
     }
 
     /**
@@ -134,89 +137,12 @@ class RequireJs extends Loader
 
     /**
      * @param string $code
-     * @param Module[] $depends
-     *
-     * @return string
-     */
-    protected function renderRequireBlock($code, array $depends)
-    {
-        if (empty($code) && empty($depends)) {
-            return '';
-        }
-
-        $pad = 0;
-        $injects = [];
-        $modules = [];
-
-        foreach ($depends as $module) {
-            if (!($module instanceof Module)) {
-                continue;
-            }
-
-            if (($inject = $module->getExports()) !== null) {
-                if ($pad > 0) {
-                    $injects = array_merge(
-                        $injects, array_fill(0, $pad, 'undefined')
-                    );
-
-                    $pad = 0;
-                }
-
-                $injects[] = $inject;
-            } else {
-                $pad++;
-            }
-
-            $modules[] = Json::encode($module->getName());
-        }
-
-        $requireBlock = 'require([' . implode(',', $modules) . ']';
-
-        if (!empty($code)) {
-            $requireBlock .= ', function(' . implode(',', $injects) . ") {\n{$code}\n}";
-        }
-
-        return $requireBlock . ');';
-    }
-
-    /**
-     * @param string $code
      *
      * @return string
      */
     private function encloseJqueryReady($code)
     {
         return "jQuery(document).ready(function() {\n{$code}\n});";
-    }
-
-    /**
-     * @param array $codeBlocks
-     * @return array
-     */
-    private function prepareCodeBlocks(array $codeBlocks)
-    {
-        krsort($codeBlocks);
-
-        for ($i = View::POS_HEAD; $i <= View::POS_LOAD; $i++) {
-            if (!isset($codeBlocks[$i], $codeBlocks[$i + 1])) {
-                continue;
-            }
-
-            $src = &$codeBlocks[$i];
-            $dst = &$codeBlocks[$i + 1];
-
-            if (empty($src['code']) && !empty($src['depends'])) {
-                if (!isset($dst['depends'])) {
-                    $dst['depends'] = [];
-                }
-
-                $dst['depends'] = array_merge($src['depends'], $dst['depends']);
-
-                unset($codeBlocks[$i]);
-            }
-        }
-
-        return $codeBlocks;
     }
 
     /**
