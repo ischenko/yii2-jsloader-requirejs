@@ -115,11 +115,14 @@ class ConfigTest extends \Codeception\Test\Unit
         ]);
 
         $testModule = $this->config->getModule('test');
+        $testModule2 = $this->config->getModule('test2');
 
         verify($testModule)->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
 
         $testModule->addFile('another_file.js');
         $testModule->addFile('yet_another_file.js');
+        $testModule->setOptions(['baseUrl' => '/base/url']);
+        $testModule2->setOptions(['baseUrl' => '/base/url']);
 
         $this->config->setShim([
             'test' => [
@@ -134,14 +137,14 @@ class ConfigTest extends \Codeception\Test\Unit
         verify($this->config->toArray())->equals([
             'shim' => [
                 'test' => [
-                    'deps' => ['test2', 'test2.js', 'another_file.js']
+                    'deps' => ['test2']
                 ],
                 'test2' => [
                     'exports' => 'library'
                 ]
             ],
             'paths' => [
-                'test' => ['yet_another_file'],
+                'test' => '/base/url',
                 'test2' => ['test'],
                 'test3' => ['t1', 't2', 't3']
             ]

@@ -80,23 +80,32 @@ class RequireJsTest extends \Codeception\Test\Unit
                     View::POS_BEGIN => new JsExpression('begin code block'),
                     View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
                 ],
-                "begin code block\nend code block\nrequire([\"\\/file1\"], function() {\n\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});"
+                "begin code block\nend code block\n\nload code block"
             ],
             [
                 [
                     View::POS_END => new JsExpression('end code block'),
-                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
-                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'])]),
-                    View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['file1'], ['getFiles' => ['/file' => []]])]),
+                    View::POS_BEGIN => new JsExpression('begin code block'),
+                    View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['file1'], ['getFiles' => ['/file' => []]])]),
+                ],
+                "begin code block\nend code block\nrequire([\"file1\"], function() {\n\nrequire([\"file1\"], function() {\nload code block\n});\n});"
+            ],
+            [
+                [
+                    View::POS_END => new JsExpression('end code block'),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'], ['getFiles' => ['file' => []]])]),
+                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'], ['getFiles' => ['file' => []]])]),
+                    View::POS_READY => new JsExpression(null, [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'], ['getFiles' => ['file' => []]])]),
                 ],
                 "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"\\/file1\"], function() {\n\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
             ],
             [
                 [
                     View::POS_END => new JsExpression('end code block'),
-                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'])]),
-                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'])]),
-                    View::POS_READY => new JsExpression(new JsExpression('test'), [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['ready'])]),
+                    View::POS_LOAD => new JsExpression('load code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['/file1'], ['getFiles' => ['file' => []]])]),
+                    View::POS_BEGIN => new JsExpression('begin code block', [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['mod'], ['getFiles' => ['file' => []]])]),
+                    View::POS_READY => new JsExpression(new JsExpression('test'), [Stub::construct('ischenko\yii2\jsloader\requirejs\Module', ['ready'], ['getFiles' => ['file' => []]])]),
                 ],
                 "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(document).ready(function() {\ntest\n});\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
             ]

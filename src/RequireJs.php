@@ -7,12 +7,11 @@
 
 namespace ischenko\yii2\jsloader;
 
-use ischenko\yii2\jsloader\requirejs\JsRenderer;
 use yii\web\View;
 use yii\helpers\Json;
 use ischenko\yii2\jsloader\base\Loader;
 use ischenko\yii2\jsloader\requirejs\Config;
-use ischenko\yii2\jsloader\requirejs\Module;
+use ischenko\yii2\jsloader\requirejs\JsRenderer;
 use ischenko\yii2\jsloader\helpers\JsExpression;
 
 /**

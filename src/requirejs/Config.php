@@ -30,46 +30,14 @@ class Config extends \ischenko\yii2\jsloader\base\Config
         $config = [];
 
         foreach ($this->getModules() as $module) {
-            $shimConfig = [
-                'deps' => []
-            ];
-
-            $pathsConfig = [];
-
-            // Generate shim config
-            foreach ($module->getDependencies() as $dependency) {
-                $shimConfig['deps'][] = $dependency->getName();
-            }
-
-            if (($exports = $module->getExports()) !== null) {
-                $shimConfig['exports'] = $exports;
-            }
-
             // Generate paths section
-            $files = array_keys($module->getFiles());
-
-            if (!empty($files)) {
-                $pathsConfig[] = array_pop($files);
-
-                foreach ($module->getFallbackFiles() as $file) {
-                    $pathsConfig[] = $file;
-                }
-
-                foreach ($files as $file) {
-                    $shimConfig['deps'][] = $file . '.js';
-                }
-            }
-
-            if (empty($shimConfig['deps'])) {
-                unset($shimConfig['deps']);
-            }
-
-            if (!empty($shimConfig)) {
-                $config['shim'][$module->getName()] = $shimConfig;
-            }
-
-            if (!empty($pathsConfig)) {
+            if (($pathsConfig = $this->renderPaths($module)) !== []) {
                 $config['paths'][$module->getName()] = $pathsConfig;
+            }
+
+            // Generate shim section
+            if (($shimConfig = $this->renderShim($module)) !== []) {
+                $config['shim'][$module->getName()] = $shimConfig;
             }
         }
 
@@ -164,5 +132,58 @@ class Config extends \ischenko\yii2\jsloader\base\Config
         }
 
         return $this;
+    }
+
+    /**
+     * Performs generation of the shim section
+     *
+     * @param Module $module
+     * @return array
+     */
+    private function renderShim(Module $module)
+    {
+        $shimConfig = [];
+
+        foreach ($module->getDependencies() as $dependency) {
+            if (!isset($shimConfig['deps'])) {
+                $shimConfig['deps'] = [];
+            }
+
+            $shimConfig['deps'][] = $dependency->getName();
+        }
+
+        if (($exports = $module->getExports()) !== null) {
+            $shimConfig['exports'] = $exports;
+        }
+
+        return $shimConfig;
+    }
+
+    /**
+     * Performs generation of the paths section
+     *
+     * @param Module $module
+     * @return array
+     */
+    private function renderPaths(Module $module)
+    {
+        $options = $module->getOptions();
+        $files = array_keys($module->getFiles());
+
+        if (!empty($options['baseUrl'])
+            && ($files === [] || count($files) > 1)
+        ) {
+            return $options['baseUrl'];
+        } elseif ($files === []) {
+            return [];
+        }
+
+        $paths = [array_pop($files)];
+
+        foreach ($module->getFallbackFiles() as $file) {
+            $paths[] = $file;
+        }
+
+        return $paths;
     }
 }

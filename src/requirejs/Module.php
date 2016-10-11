@@ -30,7 +30,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     /**
      * Sets value for the exports section of shim config
      *
-     * @param string $exports
+     * @param string|null $exports
      * @return $this
      *
      * @throws InvalidParamException
@@ -54,7 +54,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getExports()
     {

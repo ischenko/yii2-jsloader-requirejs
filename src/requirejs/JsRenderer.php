@@ -63,11 +63,15 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
 
         /** @var Module $dependency */
         foreach ($expression->getDependencies() as $dependency) {
+            if ($dependency->getFiles() === []) {
+                continue;
+            }
+
             if (($inject = $dependency->getExports()) !== null) {
                 if ($pad > 0) {
-                    $injects = array_merge(
-                        $injects, array_fill(0, $pad, 'undefined')
-                    );
+                    for ($i = 0; $i < $pad; $i++) {
+                        $injects[] = 'undefined';
+                    }
 
                     $pad = -1;
                 }

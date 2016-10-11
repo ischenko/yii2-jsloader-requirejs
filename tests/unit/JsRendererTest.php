@@ -39,7 +39,13 @@ class JsRendererTest extends \Codeception\Test\Unit
         verify($expression->render($renderer))->equals('test;');
 
         $mod1 = new Module('mod1');
+        $mod1->addFile('file');
+
         $mod2 = new Module('mod2');
+
+        verify((new JsExpression(null, [$mod2]))->render($renderer))->equals('');
+
+        $mod2->addFile('file');
 
         $mod1->setExports('mod1');
 
@@ -58,6 +64,7 @@ class JsRendererTest extends \Codeception\Test\Unit
         $mod1->setExports('mod1');
 
         $mod3 = new Module('mod3');
+        $mod3->addFile('file');
 
         verify((new JsExpression('test;', [$mod2, $mod1, $mod3]))->render($renderer))
             ->equals("require([\"mod2\",\"mod1\",\"mod3\"], function(undefined,mod1) {\ntest;\n});");
