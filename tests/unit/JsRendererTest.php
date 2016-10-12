@@ -75,5 +75,12 @@ class JsRendererTest extends \Codeception\Test\Unit
         $expression = new JsExpression(new JsExpression('test;', [$mod2]), [$mod1]);
 
         verify($expression->render($renderer))->equals("require([\"mod1\"], function(mod1) {\nrequire([\"mod2\"], function() {\ntest;\n});\n});");
+
+        $expression = new JsExpression(new JsExpression('test;', [$mod2]), [$mod1, $mod3]);
+
+        $mod1->addFile('file2');
+        $mod3->setExports('mod3');
+
+        verify($expression->render($renderer))->equals("require([\"mod3\"], function(mod3) {\nrequire([\"file.js\",\"file2.js\"], function() {\nrequire([\"mod2\"], function() {\ntest;\n});\n});\n});");
     }
 }

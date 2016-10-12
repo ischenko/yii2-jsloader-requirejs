@@ -76,20 +76,24 @@ class Config extends \ischenko\yii2\jsloader\base\Config
                 continue;
             }
 
+            $file = $files;
+            $fallback = [];
+
+            if (is_array($files)) {
+                $file = array_shift($files);
+                $fallback = $files;
+            }
+
             if (!($module = $this->getModule($moduleName))) {
                 $module = $this->addModule($moduleName);
             }
 
-            $module->clearFiles()->clearFallbackFiles();
+            $module->clearFiles();
+            $module->clearFallbackFiles();
+            $module->addFile($file);
 
-            if (!is_array($files)) {
-                $module->addFile($files);
-            } else {
-                $module->addFile(array_shift($files));
-
-                if ($files !== []) {
-                    $module->addFallbackFiles($files);
-                }
+            if ($fallback !== []) {
+                $module->addFallbackFiles($fallback);
             }
         }
 
@@ -174,8 +178,6 @@ class Config extends \ischenko\yii2\jsloader\base\Config
             && ($files === [] || count($files) > 1)
         ) {
             return $options['baseUrl'];
-        } elseif ($files === []) {
-            return [];
         }
 
         $paths = [array_pop($files)];

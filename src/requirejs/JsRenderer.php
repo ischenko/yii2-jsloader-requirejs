@@ -31,12 +31,30 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
             return '';
         }
 
-        list($modules, $injects) = $this->extractDependencies($expression);
-
         if (($code = $expression->getExpression()) instanceof JsExpression) {
             $code = $this->renderJsExpression($code);
         }
 
+        if (($packages = $this->removePackages($expression)) !== []) {
+            list($modules, $injects) = $this->extractRequireJsModules($packages);
+            $code = $this->renderRequireJsCode($code, $modules, $injects);
+        }
+
+        list($modules, $injects) = $this->extractRequireJsModules($expression->getDependencies());
+
+        return $this->renderRequireJsCode($code, $modules, $injects);
+    }
+
+    /**
+     * Performs rendering of requirejs code block
+     *
+     * @param string $code
+     * @param array $modules
+     * @param array $injects
+     * @return string
+     */
+    private function renderRequireJsCode($code, array $modules, array $injects)
+    {
         if ($modules === []) {
             return $code;
         }
@@ -52,18 +70,53 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
 
     /**
      * @param JsExpression $expression
+     * @return Module[] a list of dependencies which have multiple files
+     */
+    private function removePackages(JsExpression $expression)
+    {
+        $dependencies = $removedDependencies = [];
+
+        foreach ($expression->getDependencies() as $dependency) {
+            if (count($dependency->getFiles()) > 1) {
+                $removedDependencies[] = $dependency;
+                continue;
+            }
+
+            $dependencies[] = $dependency;
+        }
+
+        $expression->setDependencies($dependencies);
+
+        return $removedDependencies;
+    }
+
+    /**
+     * @param Module[] $dependencies
      *
      * @return array
      */
-    private function extractDependencies(JsExpression $expression)
+    private function extractRequireJsModules(array $dependencies)
     {
         $pad = 0;
         $injects = [];
         $modules = [];
 
         /** @var Module $dependency */
-        foreach ($expression->getDependencies() as $dependency) {
-            if ($dependency->getFiles() === []) {
+        foreach ($dependencies as $dependency) {
+            $files = $dependency->getFiles();
+
+            if ($files === []) {
+                continue;
+            }
+
+            if (count($files) > 1) {
+                $files = array_keys($files);
+
+                foreach ($files as $file) {
+                    $pad++;
+                    $modules[] = json_encode($file . '.js');
+                }
+
                 continue;
             }
 
