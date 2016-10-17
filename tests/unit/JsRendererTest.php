@@ -1,6 +1,6 @@
 <?php
 
-namespace ischenko\yii2\jsloader\tests\unit\requirejs;
+namespace ischenko\yii2\jsloader\requirejs\tests\unit;
 
 use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\requirejs\JsRenderer;
@@ -39,7 +39,7 @@ class JsRendererTest extends \Codeception\Test\Unit
         verify($expression->render($renderer))->equals('test;');
 
         $mod1 = new Module('mod1');
-        $mod1->addFile('file');
+        $mod1->addFile('/file');
 
         $mod2 = new Module('mod2');
 
@@ -78,9 +78,9 @@ class JsRendererTest extends \Codeception\Test\Unit
 
         $expression = new JsExpression(new JsExpression('test;', [$mod2]), [$mod1, $mod3]);
 
-        $mod1->addFile('file2');
+        $mod1->addFile('/file2');
         $mod3->setExports('mod3');
 
-        verify($expression->render($renderer))->equals("require([\"mod3\"], function(mod3) {\nrequire([\"file.js\",\"file2.js\"], function() {\nrequire([\"mod2\"], function() {\ntest;\n});\n});\n});");
+        verify($expression->render($renderer))->equals("require([\"mod3\"], function(mod3) {\nrequire([\"mod1\/file\",\"mod1\/file2\"], function() {\nrequire([\"mod2\"], function() {\ntest;\n});\n});\n});");
     }
 }

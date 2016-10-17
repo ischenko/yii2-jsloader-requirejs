@@ -109,12 +109,14 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
                 continue;
             }
 
-            if (count($files) > 1) {
+            if (($filesCount = count($files)) > 1) {
+                $pad += $filesCount;
                 $files = array_keys($files);
+                $baseUrlPattern = preg_quote($dependency->getBaseUrl());
+                $baseUrlPattern = '#^' . $baseUrlPattern . '#';
 
                 foreach ($files as $file) {
-                    $pad++;
-                    $modules[] = json_encode($file . '.js');
+                    $modules[] = json_encode(preg_replace($baseUrlPattern, $dependency->getName(), $file));
                 }
 
                 continue;
