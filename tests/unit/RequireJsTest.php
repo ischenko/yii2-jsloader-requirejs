@@ -137,8 +137,6 @@ class RequireJsTest extends \Codeception\Test\Unit
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
 
             $publishRequireJs->invokeArgs($loader, ['code']);
-
-            $this->verifyMockObjects();
         });
 
         $this->specify('it does not publish the requirejs library if the libraryUrl property is set', function () {
@@ -160,8 +158,6 @@ class RequireJsTest extends \Codeception\Test\Unit
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
 
             $publishRequireJs->invokeArgs($loader, ['code']);
-
-            $this->verifyMockObjects();
         });
 
         $this->specify('it registers previously rendered JS code in the view', function () {
@@ -190,8 +186,6 @@ class RequireJsTest extends \Codeception\Test\Unit
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
 
             $publishRequireJs->invokeArgs($loader, ['code']);
-
-            $this->verifyMockObjects();
         });
 
         $this->specify('it writes generated code into a file and then sets it as data-main entry', function ($main, $expectedMain, $expectedPublish) {
@@ -222,8 +216,6 @@ class RequireJsTest extends \Codeception\Test\Unit
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
 
             $publishRequireJs->invokeArgs($loader, ['code']);
-
-            $this->verifyMockObjects();
         }, ['examples' => [
             [null, '/requirejs-main.js', 1],
             ['', '/requirejs-main.js', 1],
