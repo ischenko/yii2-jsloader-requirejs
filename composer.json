@@ -16,22 +16,18 @@
       "email": "roman@ishchenko.ck.ua"
     }
   ],
+  "prefer-stable": true,
+  "minimum-stability": "dev",
   "require": {
     "php": ">=5.4.0",
-    "ischenko/yii2-jsloader": "dev-master",
-    "bower-asset/requirejs": "~2.3"
+    "ischenko/yii2-jsloader": "^1.0",
+    "bower-asset/requirejs": "^2.3"
   },
   "require-dev": {
     "codeception/verify": "*",
     "codeception/specify": "*",
-    "codeception/codeception": "2.2.*"
+    "codeception/codeception": "*"
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/ischenko/yii2-jsloader"
-    }
-  ],
   "autoload": {
     "psr-4": {
       "ischenko\\yii2\\jsloader\\": "src/"
