@@ -23,6 +23,11 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     private $exports;
 
     /**
+     * @var \yii\web\JsExpression
+     */
+    private $_init;
+
+    /**
      * @var array
      */
     private $fallbackFiles = [];
@@ -49,6 +54,30 @@ class Module extends \ischenko\yii2\jsloader\base\Module
             $this->exports = trim($exports);
             $this->exports = $this->exports ?: null;
         }
+
+        return $this;
+    }
+
+    /**
+     * @return \yii\web\JsExpression
+     */
+    public function getInit()
+    {
+        return $this->_init;
+    }
+
+    /**
+     * @param string|\yii\web\JsExpression $init
+     *
+     * @return $this
+     */
+    public function setInit($init)
+    {
+        if (!($init instanceof \yii\web\JsExpression)) {
+            $init = new \yii\web\JsExpression($init);
+        }
+
+        $this->_init = $init;
 
         return $this;
     }

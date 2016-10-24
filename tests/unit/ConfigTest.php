@@ -130,10 +130,14 @@ class ConfigTest extends \Codeception\Test\Unit
                 'deps' => ['test2']
             ],
             'test2' => [
-                'exports' => 'library'
+                'exports' => 'library',
+                'init' => 'alert'
             ],
             'test3' => []
         ]);
+
+        verify($test2 = $this->config->getModule('test2'))->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
+        verify($expression = $test2->getInit())->isInstanceOf('yii\web\JsExpression');
 
         verify($this->config->toArray())->equals([
             'shim' => [
@@ -141,7 +145,8 @@ class ConfigTest extends \Codeception\Test\Unit
                     'deps' => ['test2']
                 ],
                 'test2' => [
-                    'exports' => 'library'
+                    'exports' => 'library',
+                    'init' => $expression
                 ]
             ],
             'paths' => [

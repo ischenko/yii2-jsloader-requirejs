@@ -3,6 +3,7 @@
 namespace ischenko\yii2\jsloader\tests\unit\requirejs;
 
 use ischenko\yii2\jsloader\requirejs\Module;
+use yii\web\JsExpression;
 
 class ModuleTest extends \Codeception\Test\Unit
 {
@@ -59,7 +60,7 @@ class ModuleTest extends \Codeception\Test\Unit
 
     public function testExports()
     {
-        $this->specify('it filters exports value', function($value, $expected) {
+        $this->specify('it filters exports value', function ($value, $expected) {
             verify($this->module->getExports())->null();
             verify($this->module->setExports($value))->same($this->module);
             verify($this->module->getExports())->equals($expected);
@@ -70,8 +71,21 @@ class ModuleTest extends \Codeception\Test\Unit
             [' test', 'test'],
         ]]);
 
-        $this->specify('it throws an exception if value is not a string', function() {
+        $this->specify('it throws an exception if value is not a string', function () {
             $this->module->setExports([]);
         }, ['throws' => 'yii\base\InvalidParamException']);
+    }
+
+    public function testInitProperty()
+    {
+        verify($this->module->setInit('alert(1);'))->same($this->module);
+        verify($this->module->getInit())->isInstanceOf(JsExpression::className());
+        verify($this->module->getInit()->expression)->equals('alert(1);');
+
+        $this->module->setInit($this->module->getInit());
+        verify($this->module->getInit())->isInstanceOf(JsExpression::className());
+        verify($this->module->getInit()->expression)->equals('alert(1);');
+
+
     }
 }

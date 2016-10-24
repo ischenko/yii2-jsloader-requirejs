@@ -220,6 +220,10 @@ class Config extends \ischenko\yii2\jsloader\base\Config
                 }
             }
 
+            if (!empty($properties['init'])) {
+                $module->setInit($properties['init']);
+            }
+
             if (!empty($properties['exports'])) {
                 $module->setExports($properties['exports']);
             }
@@ -248,6 +252,10 @@ class Config extends \ischenko\yii2\jsloader\base\Config
 
         if (($exports = $module->getExports()) !== null) {
             $shimConfig['exports'] = $exports;
+        }
+
+        if (($init = $module->getInit()) !== null) {
+            $shimConfig['init'] = $init;
         }
 
         return $shimConfig;
