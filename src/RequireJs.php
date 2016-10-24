@@ -112,8 +112,7 @@ class RequireJs extends Loader
             $requireOptions['data-main'] = trim($this->main);
 
             if (empty($requireOptions['data-main'])) {
-                $mainPath = $this->writeFileContent('requirejs-main.js', $code);
-                list(, $requireOptions['data-main']) = $assetManager->publish($mainPath);
+                list(, $requireOptions['data-main']) = $assetManager->publish($this->writeFileContent($code));
             }
         }
 
@@ -145,19 +144,20 @@ class RequireJs extends Loader
     }
 
     /**
-     * @param string $filename
      * @param string $content
      *
      * @return string full path to a file
      *
      * @throws \RuntimeException
      */
-    private function writeFileContent($filename, $content)
+    private function writeFileContent($content)
     {
-        $filePath = $this->getRuntimePath() . DIRECTORY_SEPARATOR . $filename;
+        $filePath = $this->getRuntimePath() . DIRECTORY_SEPARATOR . md5($content) . '.js';
 
-        if (@file_put_contents($filePath, $content, LOCK_EX) === false) {
-            throw new \RuntimeException("Failed to write data into a file \"$filePath\"");
+        if (!file_exists($filePath)) {
+            if (@file_put_contents($filePath, $content, LOCK_EX) === false) {
+                throw new \RuntimeException("Failed to write data into a file \"$filePath\"");
+            }
         }
 
         return $filePath;

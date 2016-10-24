@@ -205,7 +205,7 @@ class RequireJsTest extends \Codeception\Test\Unit
                     }),
                     'assetManager' => Stub::makeEmpty('yii\web\AssetManager', [
                         'publish' => Stub::exactly($expectedPublish, function ($path) {
-                            verify($path)->equals(\Yii::getAlias('@runtime/jsloader/requirejs-main.js'));
+                            verify($path)->equals(\Yii::getAlias('@runtime/jsloader/' . md5('code') . '.js'));
                             verify("code")->equalsFile(\Yii::getAlias($path));
                             return [null, '/' . basename($path)];
                         })
@@ -217,13 +217,13 @@ class RequireJsTest extends \Codeception\Test\Unit
 
             $publishRequireJs->invokeArgs($loader, ['code']);
         }, ['examples' => [
-            [null, '/requirejs-main.js', 1],
-            ['', '/requirejs-main.js', 1],
-            [' ', '/requirejs-main.js', 1],
+            [null, '/' . md5('code') . '.js', 1],
+            ['', '/' . md5('code') . '.js', 1],
+            [' ', '/' . md5('code') . '.js', 1],
             ['/main.js', '/main.js', 0],
         ]]);
 
-        $file = \Yii::getAlias('@runtime/jsloader') . '/requirejs-main.js';
+        $file = \Yii::getAlias('@runtime/jsloader') . '/' . md5('code') . '.js';
 
         $this->afterSpecify(function () use ($file) {
             rmdir($file);
@@ -232,6 +232,7 @@ class RequireJsTest extends \Codeception\Test\Unit
 
         $this->specify('it throws an exception if it fails to write data-main file', function () use ($file) {
             $loader = $this->mockLoader();
+            $loader->runtimePath = '/var/run';
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
             @unlink($file);
             @mkdir($file);
