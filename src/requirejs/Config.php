@@ -21,6 +21,88 @@ use ischenko\yii2\jsloader\ModuleInterface;
 class Config extends \ischenko\yii2\jsloader\base\Config
 {
     /**
+     * @var array a list of other configuration options
+     */
+    protected $attributes = [];
+
+    /**
+     * @var array a list of valid options
+     *
+     * TODO: create setter and getter for map and config
+     */
+    static private $validOptions = [
+        'map' => 1,
+        'config' => 1,
+        'enforceDefine' => 1,
+        'waitSeconds' => 1,
+        'context' => 1,
+        'deps' => 1,
+        'xhtml' => 1,
+        'urlArgs' => 1,
+        'scriptType' => 1,
+        'skipDataMain' => 1,
+    ];
+
+    /**
+     * Common setter for configuration options
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        if (isset(self::$validOptions[$name])) {
+            $this->attributes[$name] = $value;
+            return;
+        }
+
+        parent::__set($name, $value);
+    }
+
+    /**
+     * Common getter for configuration options
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (isset(self::$validOptions[$name])) {
+            return isset($this->attributes[$name])
+                ? $this->attributes[$name] : null;
+        }
+
+        return parent::__get($name);
+    }
+
+    /**
+     * Setter for callback option
+     *
+     * @param string|\yii\web\JsExpression $value
+     *
+     * @return $this
+     */
+    public function setCallback($value)
+    {
+        if (!($value instanceof \yii\web\JsExpression)) {
+            $value = new \yii\web\JsExpression($value);
+        }
+
+        $this->attributes['callback'] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return \yii\web\JsExpression|null
+     */
+    public function getCallback()
+    {
+        return isset($this->attributes['callback'])
+            ? $this->attributes['callback'] : null;
+    }
+
+    /**
      * Builds configuration set into an array
      *
      * @return array
@@ -28,6 +110,14 @@ class Config extends \ischenko\yii2\jsloader\base\Config
     public function toArray()
     {
         $config = [];
+
+        foreach ($this->attributes as $option => $value) {
+            $config[$option] = $value;
+        }
+
+        if (!isset($config['baseUrl']) && !empty($this->baseUrl)) {
+            $config['baseUrl'] = $this->baseUrl;
+        }
 
         foreach ($this->getModules() as $module) {
             // Generate paths section

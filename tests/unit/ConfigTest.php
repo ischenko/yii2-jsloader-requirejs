@@ -4,6 +4,7 @@ namespace ischenko\yii2\jsloader\tests\unit\requirejs;
 
 use Codeception\Util\Stub;
 use ischenko\yii2\jsloader\requirejs\Config;
+use yii\web\JsExpression;
 
 class ConfigTest extends \Codeception\Test\Unit
 {
@@ -149,5 +150,31 @@ class ConfigTest extends \Codeception\Test\Unit
                 'test3' => ['t1', 't2', 't3']
             ]
         ]);
+    }
+
+    public function testAttributesSetter()
+    {
+        $this->specify('it allows to set valid options', function() {
+            $this->config->config = ['test' => 1];
+            verify($this->config->config)->equals(['test' => 1]);
+        });
+
+        $this->specify('it allows to get valid options', function() {
+            verify($this->config->config)->null();
+        });
+
+        $this->specify('it throws an exception if property cannot be set', function() {
+            $this->config->unknown = ['test' => 1];
+        }, ['throws' => 'yii\base\UnknownPropertyException']);
+
+        $this->specify('it throws an exception if property cannot be get', function() {
+            $unknown = $this->config->unknown;
+        }, ['throws' => 'yii\base\UnknownPropertyException']);
+
+        $this->specify('it wraps callback option with JsExpression', function() {
+            $this->config->callback = 'alert(1);';
+            verify($this->config->callback)->isInstanceOf(JsExpression::className());
+            verify($this->config->callback->expression)->equals('alert(1);');
+        });
     }
 }
