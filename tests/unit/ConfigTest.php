@@ -86,14 +86,14 @@ class ConfigTest extends \Codeception\Test\Unit
 
         verify($dep1)->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
         verify($module)->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
-        verify($module->getDependencies())->equals([$dep1]);
+        verify($module->getDependencies())->equals([$dep1->getName() => $dep1]);
 
         $this->config->setShim(['test' => ['deps' => ['test2.js']]]);
 
         $dep2 = $this->config->getModule(md5('test2.js'));
 
         verify($dep1)->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
-        verify($module->getDependencies())->equals([$dep2]);
+        verify($module->getDependencies())->equals([$dep2->getName() => $dep2]);
 
         $this->config->setShim(['test' => ['exports' => ' ']]);
         verify($module->getExports())->null();
