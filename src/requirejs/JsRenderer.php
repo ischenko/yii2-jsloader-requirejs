@@ -35,11 +35,6 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
             $code = $this->renderJsExpression($code);
         }
 
-        if (($packages = $this->removePackages($expression)) !== []) {
-            list($modules, $injects) = $this->extractRequireJsModules($packages);
-            $code = $this->renderRequireJsCode($code, $modules, $injects);
-        }
-
         list($modules, $injects) = $this->extractRequireJsModules($expression->getDependencies());
 
         return $this->renderRequireJsCode($code, $modules, $injects);
@@ -69,28 +64,6 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
     }
 
     /**
-     * @param JsExpression $expression
-     * @return Module[] a list of dependencies which have multiple files
-     */
-    private function removePackages(JsExpression $expression)
-    {
-        $dependencies = $removedDependencies = [];
-
-        foreach ($expression->getDependencies() as $dependency) {
-            if (count($dependency->getFiles()) > 1) {
-                $removedDependencies[] = $dependency;
-                continue;
-            }
-
-            $dependencies[] = $dependency;
-        }
-
-        $expression->setDependencies($dependencies);
-
-        return $removedDependencies;
-    }
-
-    /**
      * @param Module[] $dependencies
      *
      * @return array
@@ -103,22 +76,7 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
 
         /** @var Module $dependency */
         foreach ($dependencies as $dependency) {
-            $files = $dependency->getFiles();
-
-            if ($files === []) {
-                continue;
-            }
-
-            if (($filesCount = count($files)) > 1) {
-                $pad += $filesCount;
-                $files = array_keys($files);
-                $baseUrlPattern = preg_quote($dependency->getBaseUrl());
-                $baseUrlPattern = '#^' . $baseUrlPattern . '#';
-
-                foreach ($files as $file) {
-                    $modules[] = json_encode(preg_replace($baseUrlPattern, $dependency->getName(), $file));
-                }
-
+            if ($dependency->getFiles() === []) {
                 continue;
             }
 
@@ -127,10 +85,9 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
                     for ($i = 0; $i < $pad; $i++) {
                         $injects[] = 'undefined';
                     }
-
-                    $pad = -1;
                 }
 
+                $pad = -1;
                 $injects[] = $inject;
             }
 

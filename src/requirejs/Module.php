@@ -91,20 +91,6 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     }
 
     /**
-     * Adds JS file into a module
-     *
-     * @param string $file URL of a file
-     * @param array $options options for given file
-     *
-     * @return $this
-     * @throws InvalidParamException
-     */
-    public function addFile($file, $options = [])
-    {
-        return parent::addFile($this->removeJsExtension($file), $options);
-    }
-
-    /**
      * Adds fallback files for the module
      *
      * @param array $files
@@ -114,7 +100,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     public function addFallbackFiles(array $files)
     {
         foreach ($files as $file) {
-            $this->fallbackFiles[] = $this->removeJsExtension($file);
+            $this->fallbackFiles[] = $file;
         }
 
         return $this;
@@ -138,16 +124,5 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     public function getFallbackFiles()
     {
         return $this->fallbackFiles;
-    }
-
-    /**
-     * Removes .js extension for a file
-     *
-     * @param string $file
-     * @return string
-     */
-    private function removeJsExtension($file)
-    {
-        return preg_replace('/\.js$/', '', $file);
     }
 }

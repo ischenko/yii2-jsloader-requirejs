@@ -29,31 +29,18 @@ class ModuleTest extends \Codeception\Test\Unit
         verify($this->module)->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
     }
 
-    public function testAddFile()
-    {
-        verify($this->module->getFiles())->equals([]);
-        verify($this->module->addFile('file'))->same($this->module);
-        verify($this->module->getFiles())->equals(['file' => []]);
-
-        $this->module->addFile('file.js');
-        $this->module->addFile('file.sj');
-        $this->module->addFile('file1.js');
-
-        verify($this->module->getFiles())->equals(['file' => [], 'file.sj' => [], 'file1' => []]);
-    }
-
     public function testFallbackFiles()
     {
         verify($this->module->getFallbackFiles())->equals([]);
         verify($this->module->addFallbackFiles(['file1.js', 'key' => 'file2', 'file3.sj']))->same($this->module);
-        verify($this->module->getFallbackFiles())->equals(['file1', 'file2', 'file3.sj']);
+        verify($this->module->getFallbackFiles())->equals(['file1.js', 'file2', 'file3.sj']);
     }
 
     public function testClearFallbackFiles()
     {
         verify($this->module->getFallbackFiles())->equals([]);
         verify($this->module->addFallbackFiles(['file1.js', 'key' => 'file2', 'file3.sj']));
-        verify($this->module->getFallbackFiles())->equals(['file1', 'file2', 'file3.sj']);
+        verify($this->module->getFallbackFiles())->equals(['file1.js', 'file2', 'file3.sj']);
         verify($this->module->clearFallbackFiles())->same($this->module);
         verify($this->module->getFallbackFiles())->equals([]);
     }

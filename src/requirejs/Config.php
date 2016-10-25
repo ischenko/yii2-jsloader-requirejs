@@ -115,19 +115,19 @@ class Config extends \ischenko\yii2\jsloader\base\Config
             $config[$option] = $value;
         }
 
-        if (!isset($config['baseUrl']) && !empty($this->baseUrl)) {
+        if (!empty($this->baseUrl)) {
             $config['baseUrl'] = $this->baseUrl;
         }
 
         foreach ($this->getModules() as $module) {
-            // Generate paths section
-            if (($pathsConfig = $this->renderPaths($module)) !== []) {
-                $config['paths'][$module->getName()] = $pathsConfig;
-            }
-
             // Generate shim section
             if (($shimConfig = $this->renderShim($module)) !== []) {
                 $config['shim'][$module->getName()] = $shimConfig;
+            }
+
+            // Generate paths section
+            if (($pathsConfig = $this->renderPaths($module, $config)) !== []) {
+                $config['paths'][$module->getName()] = $pathsConfig;
             }
         }
 
@@ -265,25 +265,52 @@ class Config extends \ischenko\yii2\jsloader\base\Config
      * Performs generation of the paths section
      *
      * @param Module $module
+     * @param array $config
+     *
      * @return array
      */
-    private function renderPaths(Module $module)
+    private function renderPaths(Module $module, &$config)
     {
         $options = $module->getOptions();
         $files = array_keys($module->getFiles());
 
-        if (!empty($options['baseUrl'])
-            && ($files === [] || count($files) > 1)
-        ) {
+        if (!empty($options['baseUrl']) && $files === []) {
             return $options['baseUrl'];
         }
 
-        $paths = [array_pop($files)];
+        $paths = [$this->removeJsExtension(array_pop($files))];
 
         foreach ($module->getFallbackFiles() as $file) {
-            $paths[] = $file;
+            $paths[] = $this->removeJsExtension($file);
+        }
+
+        // Add rest of the files as dependencies
+        if ($files !== []) {
+            if (!isset($config['shim'][$module->getName()]['deps'])) {
+                $config['shim'][$module->getName()]['deps'] = [];
+            }
+
+            foreach ($files as $file) {
+                if (!isset($parentDepends) || !isset($options['async'])) {
+                    $parentDepends = $config['shim'][$module->getName()]['deps'];
+                }
+
+                $config['shim'][$file]['deps'] = $parentDepends;
+                $config['shim'][$module->getName()]['deps'][] = $file;
+            }
         }
 
         return $paths;
+    }
+
+    /**
+     * Removes .js extension for a file
+     *
+     * @param string $file
+     * @return string
+     */
+    private function removeJsExtension($file)
+    {
+        return preg_replace('/\.js$/', '', $file);
     }
 }
