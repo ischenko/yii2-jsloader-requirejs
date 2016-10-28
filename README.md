@@ -9,7 +9,7 @@ An Yii2 extension that allows to register asset bundles as [RequireJS](http://re
 ## Installation
 *Requires PHP >= 5.4*
 
-*Requires [ischenko/yii2-jsloader](https://github.com/ischenko/yii2-jsloader) >= 1.0*
+*Requires [ischenko/yii2-jsloader](https://github.com/ischenko/yii2-jsloader) >= 1.1*
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 
