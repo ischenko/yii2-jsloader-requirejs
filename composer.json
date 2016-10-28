@@ -16,8 +16,6 @@
       "email": "roman@ishchenko.ck.ua"
     }
   ],
-  "prefer-stable": true,
-  "minimum-stability": "stable",
   "require": {
     "php": ">=5.4.0",
     "ischenko/yii2-jsloader": "^1.0",
