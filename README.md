@@ -81,6 +81,45 @@ It is also possible to set aliases for modules, for example:
     ...
 ```
 
+Or you can set alias, exports, init options from asset bundle:
+
+```php
+class jQueryFireflyAsset extends AssetBundle
+{
+    public $js
+        = [
+            'jquery.firefly.min.js'
+        ];
+
+    public $jsOptions
+        = [
+            'requirejs' => [
+                'alias' => 'jqff',
+                //'init' => 'function(jQuery) { /* do some init here */ }'
+                //'exports' => 'some-exported'
+            ]
+        ];
+
+    public $depends
+        = [
+            'yii\web\JqueryAsset',
+        ];
+
+        
+//    public function registerAssetFiles($view)
+//    {
+//        parent::registerAssetFiles($view);
+        
+//        $this->jsOptions['requirejs']['init'] =<<<EOS
+//function(jQuery) {
+//    Or do some complex init... 
+//}
+//EOS;
+//    }
+
+}
+```
+
 This will produce following output:
 
 ```javascript

@@ -125,4 +125,21 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     {
         return $this->fallbackFiles;
     }
+
+    /**
+     * @param array $options options for a module. Loads settings from requirejs key
+     * @return $this
+     */
+    public function setOptions(array $options)
+    {
+        if (isset($options['requirejs'])) {
+            foreach ((array)$options['requirejs'] as $key => $value) {
+                $this->$key = $value;
+            }
+
+            unset($options['requirejs']);
+        }
+
+        return parent::setOptions($options);
+    }
 }

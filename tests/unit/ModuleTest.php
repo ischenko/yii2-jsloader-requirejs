@@ -75,4 +75,27 @@ class ModuleTest extends \Codeception\Test\Unit
 
 
     }
+
+    public function testRequireJsOptions()
+    {
+        $options = [
+            'requirejs' => [
+                'alias' => 'testing',
+                'init' => 'test;',
+                'exports' => 'test'
+            ],
+            'test' => 't'
+        ];
+
+        verify($this->module->setOptions($options))->same($this->module);
+        verify($this->module->getOptions())->equals(['test' => 't']);
+
+        verify($this->module->getAlias())->equals('testing');
+        verify($this->module->getExports())->equals('test');
+        verify($this->module->getInit())->isInstanceOf('yii\web\JsExpression');
+
+        $this->tester->expectException('yii\base\UnknownPropertyException', function() {
+            $this->module->setOptions(['requirejs' => ['unknown' => 1]]);
+        });
+    }
 }
