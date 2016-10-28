@@ -137,7 +137,11 @@ class ConfigTest extends \Codeception\Test\Unit
                 'test3' => [],
                 'test4' => [
                     'exports' => 'something'
-                ]
+                ],
+            ]);
+
+            $this->config->setAliases([
+                'test4' => 'TESTING4'
             ]);
 
             verify($test2 = $this->config->getModule('test2'))->isInstanceOf('ischenko\yii2\jsloader\requirejs\Module');
@@ -162,7 +166,7 @@ class ConfigTest extends \Codeception\Test\Unit
                     'another_file.js' => [
                         'deps' => ['test2', 'test2.js']
                     ],
-                    'test4' => [
+                    'TESTING4' => [
                         'deps' => ['t1', 't2'],
                         'exports' => 'something'
                     ],
@@ -177,7 +181,7 @@ class ConfigTest extends \Codeception\Test\Unit
                     'test' => ['yet_another_file'],
                     'test2' => ['test'],
                     'test3' => ['t1', 't2', 't3'],
-                    'test4' => ['t3']
+                    'TESTING4' => ['t3']
                 ]
             ]);
         });

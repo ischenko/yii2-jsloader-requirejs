@@ -47,7 +47,8 @@ Add the [behavior](https://github.com/ischenko/yii2-jsloader#usage) and requirej
     ...
 ```
 
-Additionally modules configuration accepts options described in [RequireJS API docs](http://requirejs.org/docs/api.html#config): 
+Modules configuration accepts options described in [RequireJS API docs](http://requirejs.org/docs/api.html#config). 
+It is also possible to set aliases for modules, for example:
 
 ```php
     ...
@@ -61,8 +62,15 @@ Additionally modules configuration accepts options described in [RequireJS API d
                         'shim' => [
                             'yii\web\JqueryAsset' => [
                                 'exports' => 'jQuery'
+                            ],
+                            'app\assets\jQueryFireflyAsset' => [
+                                'deps' => ['yii\web\JqueryAsset']
                             ]
                         ],
+                        'aliases' => [
+                            'yii\web\JqueryAsset' => 'jq',
+                            'app\assets\jQueryFireflyAsset' => 'jqff'
+                        ]
                     ],
                     'class' => 'ischenko\yii2\jsloader\RequireJs',
                 ]
@@ -72,6 +80,27 @@ Additionally modules configuration accepts options described in [RequireJS API d
     ]
     ...
 ```
+
+This will produce following output:
+
+```javascript
+var require = {
+    "shim": {
+        "jq": {
+            "exports": "jQuery"
+        }, 
+        "jqff": {
+            "deps": ["jq"]
+        }
+    },
+    "paths": {
+        "jq": ["/assets/e7b76d86/jquery"],
+        "jqff": ["/assets/4127fff7/jquery.firefly.min"]
+    }
+};
+```
+
+**Please note** that aliases works only within client-side code. On server-side you still need to operate with actual module names.
 
 ##License
 **MIT**

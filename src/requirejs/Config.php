@@ -122,12 +122,12 @@ class Config extends \ischenko\yii2\jsloader\base\Config
         foreach ($this->getModules() as $module) {
             // Generate shim section
             if (($shimConfig = $this->renderShim($module)) !== []) {
-                $config['shim'][$module->getName()] = $shimConfig;
+                $config['shim'][$module->getAlias()] = $shimConfig;
             }
 
             // Generate paths section
             if (($pathsConfig = $this->renderPaths($module, $config)) !== []) {
-                $config['paths'][$module->getName()] = $pathsConfig;
+                $config['paths'][$module->getAlias()] = $pathsConfig;
             }
         }
 
@@ -247,7 +247,7 @@ class Config extends \ischenko\yii2\jsloader\base\Config
                 $shimConfig['deps'] = [];
             }
 
-            $shimConfig['deps'][] = $dependency->getName();
+            $shimConfig['deps'][] = $dependency->getAlias();
         }
 
         if (($exports = $module->getExports()) !== null) {
@@ -286,17 +286,19 @@ class Config extends \ischenko\yii2\jsloader\base\Config
 
         // Add rest of the files as dependencies
         if ($files !== []) {
-            if (!isset($config['shim'][$module->getName()]['deps'])) {
-                $config['shim'][$module->getName()]['deps'] = [];
+            $moduleName = $module->getAlias();
+
+            if (!isset($config['shim'][$moduleName]['deps'])) {
+                $config['shim'][$moduleName]['deps'] = [];
             }
 
             foreach ($files as $file) {
                 if (!isset($parentDepends) || !isset($options['async'])) {
-                    $parentDepends = $config['shim'][$module->getName()]['deps'];
+                    $parentDepends = $config['shim'][$moduleName]['deps'];
                 }
 
                 $config['shim'][$file]['deps'] = $parentDepends;
-                $config['shim'][$module->getName()]['deps'][] = $file;
+                $config['shim'][$moduleName]['deps'][] = $file;
             }
         }
 

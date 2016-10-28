@@ -92,7 +92,7 @@ class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
             }
 
             $pad++;
-            $modules[] = json_encode($dependency->getName());
+            $modules[] = json_encode($dependency->getAlias());
         }
 
         return [$modules, $injects];
