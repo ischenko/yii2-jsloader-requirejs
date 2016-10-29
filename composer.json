@@ -1,6 +1,6 @@
 {
   "name": "ischenko/yii2-jsloader-requirejs",
-  "description": "An Yii2 extension which allows to handle asset bundles by requirejs",
+  "description": "An Yii2 extension that allows to handle asset bundles via requirejs",
   "keywords": [
     "yii2",
     "view",
