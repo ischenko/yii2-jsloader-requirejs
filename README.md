@@ -1,8 +1,11 @@
 # yii2-jsloader-requirejs
 
+[![Latest Stable Version](https://poser.pugx.org/ischenko/yii2-jsloader-requirejs/v/stable)](https://packagist.org/packages/ischenko/yii2-jsloader-requirejs)
+[![Total Downloads](https://poser.pugx.org/ischenko/yii2-jsloader-requirejs/downloads)](https://packagist.org/packages/ischenko/yii2-jsloader-requirejs)
 [![Build Status](https://travis-ci.org/ischenko/yii2-jsloader-requirejs.svg?branch=master)](https://travis-ci.org/ischenko/yii2-jsloader-requirejs)
 [![Code Climate](https://codeclimate.com/github/ischenko/yii2-jsloader-requirejs/badges/gpa.svg)](https://codeclimate.com/github/ischenko/yii2-jsloader-requirejs)
 [![Test Coverage](https://codeclimate.com/github/ischenko/yii2-jsloader-requirejs/badges/coverage.svg)](https://codeclimate.com/github/ischenko/yii2-jsloader-requirejs/coverage)
+[![License](https://poser.pugx.org/ischenko/yii2-jsloader-requirejs/license)](https://packagist.org/packages/ischenko/yii2-jsloader-requirejs)
 
 An Yii2 extension that allows to register asset bundles as [RequireJS](http://requirejs.org) modules.
 
@@ -140,6 +143,3 @@ var require = {
 ```
 
 **Please note** that aliases works only within client-side code. On server-side you still need to operate with actual module names.
-
-##License
-**MIT**
