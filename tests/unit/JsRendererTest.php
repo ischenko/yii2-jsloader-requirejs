@@ -2,16 +2,16 @@
 
 namespace ischenko\yii2\jsloader\requirejs\tests\unit;
 
+use Codeception\Test\Unit;
 use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\requirejs\JsRenderer;
 use ischenko\yii2\jsloader\requirejs\Module;
+use ischenko\yii2\jsloader\tests\UnitTester;
 
-class JsRendererTest extends \Codeception\Test\Unit
+class JsRendererTest extends Unit
 {
-    use \Codeception\Specify;
-
     /**
-     * @var \ischenko\yii2\jsloader\tests\UnitTester
+     * @var UnitTester
      */
     protected $tester;
 
@@ -69,7 +69,8 @@ class JsRendererTest extends \Codeception\Test\Unit
         verify((new JsExpression('test;', [$mod2, $mod1, $mod3]))->render($renderer))
             ->equals("require([\"mod2\",\"mod1\",\"mod3\"], function(undefined,mod1) {\ntest;\n});");
 
-        verify((new JsExpression('test;', [$mod2, $mod1, $mod3, $mod3, $mod1, $mod3, $mod3, $mod3, $mod1]))->render($renderer))
+        verify((new JsExpression('test;',
+            [$mod2, $mod1, $mod3, $mod3, $mod1, $mod3, $mod3, $mod3, $mod1]))->render($renderer))
             ->equals("require([\"mod2\",\"mod1\",\"mod3\",\"mod3\",\"mod1\",\"mod3\",\"mod3\",\"mod3\",\"mod1\"], function(undefined,mod1,undefined,undefined,mod1,undefined,undefined,undefined,mod1) {\ntest;\n});");
 
         $expression = new JsExpression(new JsExpression('test;', [$mod2]), [$mod1]);

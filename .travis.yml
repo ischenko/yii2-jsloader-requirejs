@@ -1,16 +1,13 @@
 language: php
 
 php:
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
-  - hhvm
+  - 7.1
+  - 7.2
+  - 7.3
+  - 7.4
 
 matrix:
   fast_finish: true
-  allow_failures:
-    - php: hhvm
 
 sudo: false
 
@@ -20,28 +17,14 @@ cache:
 
 install:
   - |
-    if [ $TRAVIS_PHP_VERSION != '5.6' ]; then
-        phpenv config-rm xdebug.ini || echo "xdebug is not installed"
-    fi
   - travis_retry composer self-update && composer --version
-  - travis_retry composer global require "fxp/composer-asset-plugin:~1.2"
+  - travis_retry composer config -g use-github-api 0
+  - travis_retry composer global require "fxp/composer-asset-plugin:^1.4"
   - travis_retry composer require "codeclimate/php-test-reporter:*" --dev
   - travis_retry composer update --no-interaction
 
-before_script:
-  - |
-    if [ $TRAVIS_PHP_VERSION = '5.6' ]; then
-      CODECEPT_FLAGS="--coverage --coverage-xml coverage.xml"
-    fi
-
 script:
   - vendor/bin/codecept run $CODECEPT_FLAGS
-
-after_script:
-  - |
-    if [ $TRAVIS_PHP_VERSION = '5.6' ]; then
-      vendor/bin/test-reporter --coverage-report tests/_output/coverage.xml
-    fi
 
 addons:
   code_climate:

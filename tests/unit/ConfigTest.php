@@ -2,18 +2,28 @@
 
 namespace ischenko\yii2\jsloader\tests\unit\requirejs;
 
-use Codeception\Util\Stub;
+use Codeception\AssertThrows;
+use Codeception\Specify;
+use Codeception\Test\Unit;
 use ischenko\yii2\jsloader\requirejs\Config;
+use ischenko\yii2\jsloader\tests\UnitTester;
 use yii\web\JsExpression;
 
-class ConfigTest extends \Codeception\Test\Unit
+class ConfigTest extends Unit
 {
-    use \Codeception\Specify;
+    use AssertThrows;
+    use Specify;
 
     /**
-     * @var \ischenko\yii2\jsloader\tests\UnitTester
+     * @var UnitTester
      */
     protected $tester;
+
+    /**
+     * @var Config
+     * @specify
+     */
+    public $config;
 
     protected function _before()
     {
@@ -69,11 +79,13 @@ class ConfigTest extends \Codeception\Test\Unit
         $this->specify('it adds fallback files to a module if they exist', function ($paths, $expected) {
             $this->config->setPaths($paths);
             verify($this->config->getModule('test')->getFallbackFiles())->equals($expected);
-        }, ['examples' => [
-            [['test' => ['file1']], []],
-            [['test' => ['file1', 'file2']], ['file2']],
-            [['test' => ['file1', 'file2', 'file3.js']], ['file2', 'file3.js']],
-        ]]);
+        }, [
+            'examples' => [
+                [['test' => ['file1']], []],
+                [['test' => ['file1', 'file2']], ['file2']],
+                [['test' => ['file1', 'file2', 'file3.js']], ['file2', 'file3.js']],
+            ]
+        ]);
     }
 
     public function testShimSetter()
@@ -186,27 +198,28 @@ class ConfigTest extends \Codeception\Test\Unit
             ]);
         });
 
-        $this->specify('it renders baseUrl in paths section if module has baseUrl property and does not have any files', function () {
-            $this->config->setShim([
-                'test' => [
-                    'exports' => 'test'
-                ],
-            ]);
-
-            $testModule = $this->config->getModule('test');
-            $testModule->setOptions(['baseUrl' => '/testing123']);
-
-            verify($this->config->toArray())->equals([
-                'shim' => [
+        $this->specify('it renders baseUrl in paths section if module has baseUrl property and does not have any files',
+            function () {
+                $this->config->setShim([
                     'test' => [
                         'exports' => 'test'
                     ],
-                ],
-                'paths' => [
-                    'test' => '/testing123',
-                ]
-            ]);
-        });
+                ]);
+
+                $testModule = $this->config->getModule('test');
+                $testModule->setOptions(['baseUrl' => '/testing123']);
+
+                verify($this->config->toArray())->equals([
+                    'shim' => [
+                        'test' => [
+                            'exports' => 'test'
+                        ],
+                    ],
+                    'paths' => [
+                        'test' => '/testing123',
+                    ]
+                ]);
+            });
 
         $this->specify('it renders baseUrl and other properties', function () {
             $this->config->baseUrl = 'test';
@@ -244,17 +257,19 @@ class ConfigTest extends \Codeception\Test\Unit
             verify($this->config->config)->null();
         });
 
-        $this->specify('it throws an exception if property cannot be set', function () {
+        // it throws an exception if property cannot be set
+        $this->assertThrows('yii\base\UnknownPropertyException', function () {
             $this->config->unknown = ['test' => 1];
-        }, ['throws' => 'yii\base\UnknownPropertyException']);
+        });
 
-        $this->specify('it throws an exception if property cannot be get', function () {
+        // it throws an exception if property cannot be get
+        $this->assertThrows('yii\base\UnknownPropertyException', function () {
             $unknown = $this->config->unknown;
-        }, ['throws' => 'yii\base\UnknownPropertyException']);
+        });
 
         $this->specify('it wraps callback option with JsExpression', function () {
             $this->config->callback = 'alert(1);';
-            verify($this->config->callback)->isInstanceOf(JsExpression::className());
+            verify($this->config->callback)->isInstanceOf(JsExpression::class);
             verify($this->config->callback->expression)->equals('alert(1);');
         });
     }

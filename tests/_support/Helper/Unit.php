@@ -1,11 +1,11 @@
 <?php
+
 namespace ischenko\yii2\jsloader\tests\Helper;
 
 // here you can define custom actions
 // all public methods declared in helper class will be available in $I
 
 use Codeception\Util\Stub;
-
 use yii\web\AssetManager;
 use yii\web\View;
 
@@ -17,7 +17,7 @@ class Unit extends \Codeception\Module
     public function mockView($params = [], $testCase = false)
     {
         return Stub::construct('yii\web\View', [], array_merge([
-            'assetManager' => Stub::makeEmpty(AssetManager::className(), [
+            'assetManager' => Stub::makeEmpty(AssetManager::class, [
                 'getAssetUrl' => function ($bundle, $asset) {
                     return $asset;
                 }

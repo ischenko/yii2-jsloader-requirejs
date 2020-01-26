@@ -7,7 +7,9 @@
 
 namespace ischenko\yii2\jsloader\requirejs;
 
+use ischenko\yii2\jsloader\FilterInterface;
 use ischenko\yii2\jsloader\ModuleInterface;
+use yii\web\JsExpression;
 
 /**
  * RequireJs-specific implementation of the configuration
@@ -16,7 +18,7 @@ use ischenko\yii2\jsloader\ModuleInterface;
  * @since 1.0
  *
  * @method Module|null getModule($name)
- * @method Module[] getModules(\ischenko\yii2\jsloader\FilterInterface $filter = null)
+ * @method Module[] getModules(FilterInterface $filter = null)
  */
 class Config extends \ischenko\yii2\jsloader\base\Config
 {
@@ -78,14 +80,14 @@ class Config extends \ischenko\yii2\jsloader\base\Config
     /**
      * Setter for callback option
      *
-     * @param string|\yii\web\JsExpression $value
+     * @param string|JsExpression $value
      *
      * @return $this
      */
     public function setCallback($value)
     {
-        if (!($value instanceof \yii\web\JsExpression)) {
-            $value = new \yii\web\JsExpression($value);
+        if (!($value instanceof JsExpression)) {
+            $value = new JsExpression($value);
         }
 
         $this->attributes['callback'] = $value;
@@ -94,7 +96,7 @@ class Config extends \ischenko\yii2\jsloader\base\Config
     }
 
     /**
-     * @return \yii\web\JsExpression|null
+     * @return JsExpression|null
      */
     public function getCallback()
     {

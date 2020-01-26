@@ -17,14 +17,16 @@
     }
   ],
   "require": {
-    "php": ">=5.4.0",
-    "ischenko/yii2-jsloader": "^1.1",
-    "bower-asset/requirejs": "^2.3"
+    "php": ">=7.1",
+    "bower-asset/requirejs": "^2.3",
+    "ischenko/yii2-jsloader": "~1.2.1"
   },
   "require-dev": {
-    "codeception/verify": "*",
-    "codeception/specify": "*",
-    "codeception/codeception": "*"
+    "codeception/verify": "~1.2",
+    "codeception/specify": "~1.2",
+    "codeception/codeception": "~4.0",
+    "codeception/assert-throws": "~1.0",
+    "codeception/module-asserts": "~1.1"
   },
   "autoload": {
     "psr-4": {

@@ -8,6 +8,7 @@
 namespace ischenko\yii2\jsloader\requirejs;
 
 use ischenko\yii2\jsloader\helpers\JsExpression;
+use ischenko\yii2\jsloader\JsRendererInterface;
 
 /**
  * Implementation of a JsRenderer for RequireJS
@@ -15,7 +16,7 @@ use ischenko\yii2\jsloader\helpers\JsExpression;
  * @author Roman Ishchenko <roman@ishchenko.ck.ua>
  * @since 1.0
  */
-class JsRenderer implements \ischenko\yii2\jsloader\JsRendererInterface
+class JsRenderer implements JsRendererInterface
 {
     /**
      * Performs rendering of js expression

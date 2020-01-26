@@ -2,15 +2,26 @@
 
 namespace ischenko\yii2\jsloader\tests\unit\requirejs;
 
+use Codeception\AssertThrows;
+use Codeception\Specify;
+use Codeception\Test\Unit;
 use ischenko\yii2\jsloader\requirejs\Module;
+use ischenko\yii2\jsloader\tests\UnitTester;
 use yii\web\JsExpression;
 
-class ModuleTest extends \Codeception\Test\Unit
+class ModuleTest extends Unit
 {
-    use \Codeception\Specify;
+    use Specify;
+    use AssertThrows;
 
     /**
-     * @var \ischenko\yii2\jsloader\tests\UnitTester
+     * @var Module
+     * @specify
+     */
+    public $module;
+
+    /**
+     * @var UnitTester
      */
     protected $tester;
 
@@ -51,29 +62,30 @@ class ModuleTest extends \Codeception\Test\Unit
             verify($this->module->getExports())->null();
             verify($this->module->setExports($value))->same($this->module);
             verify($this->module->getExports())->equals($expected);
-        }, ['examples' => [
-            ['', null],
-            [' ', null],
-            ['test', 'test'],
-            [' test', 'test'],
-        ]]);
+        }, [
+            'examples' => [
+                ['', null],
+                [' ', null],
+                ['test', 'test'],
+                [' test', 'test'],
+            ]
+        ]);
 
-        $this->specify('it throws an exception if value is not a string', function () {
+        // it throws an exception if value is not a string
+        $this->assertThrows('yii\base\InvalidParamException', function () {
             $this->module->setExports([]);
-        }, ['throws' => 'yii\base\InvalidParamException']);
+        });
     }
 
     public function testInitProperty()
     {
         verify($this->module->setInit('alert(1);'))->same($this->module);
-        verify($this->module->getInit())->isInstanceOf(JsExpression::className());
+        verify($this->module->getInit())->isInstanceOf(JsExpression::class);
         verify($this->module->getInit()->expression)->equals('alert(1);');
 
         $this->module->setInit($this->module->getInit());
-        verify($this->module->getInit())->isInstanceOf(JsExpression::className());
+        verify($this->module->getInit())->isInstanceOf(JsExpression::class);
         verify($this->module->getInit()->expression)->equals('alert(1);');
-
-
     }
 
     public function testRequireJsOptions()
@@ -94,7 +106,7 @@ class ModuleTest extends \Codeception\Test\Unit
         verify($this->module->getExports())->equals('test');
         verify($this->module->getInit())->isInstanceOf('yii\web\JsExpression');
 
-        $this->tester->expectException('yii\base\UnknownPropertyException', function() {
+        $this->assertThrows('yii\base\UnknownPropertyException', function () {
             $this->module->setOptions(['requirejs' => ['unknown' => 1]]);
         });
     }

@@ -7,12 +7,13 @@
 
 namespace ischenko\yii2\jsloader;
 
-use yii\web\View;
-use yii\helpers\Json;
 use ischenko\yii2\jsloader\base\Loader;
+use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\requirejs\Config;
 use ischenko\yii2\jsloader\requirejs\JsRenderer;
-use ischenko\yii2\jsloader\helpers\JsExpression;
+use RuntimeException;
+use yii\helpers\Json;
+use yii\web\View;
 
 /**
  * RequireJS implementation
@@ -148,7 +149,7 @@ class RequireJs extends Loader
      *
      * @return string full path to a file
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     private function writeFileContent($content)
     {
@@ -156,7 +157,7 @@ class RequireJs extends Loader
 
         if (!file_exists($filePath)) {
             if (@file_put_contents($filePath, $content, LOCK_EX) === false) {
-                throw new \RuntimeException("Failed to write data into a file \"$filePath\"");
+                throw new RuntimeException("Failed to write data into a file \"$filePath\"");
             }
         }
 

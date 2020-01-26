@@ -8,6 +8,7 @@
 namespace ischenko\yii2\jsloader\requirejs;
 
 use yii\base\InvalidParamException;
+use yii\web\JsExpression;
 
 /**
  * Implementation of a module for RequireJS
@@ -23,7 +24,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     private $exports;
 
     /**
-     * @var \yii\web\JsExpression
+     * @var JsExpression
      */
     private $_init;
 
@@ -59,7 +60,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     }
 
     /**
-     * @return \yii\web\JsExpression
+     * @return JsExpression
      */
     public function getInit()
     {
@@ -67,14 +68,14 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     }
 
     /**
-     * @param string|\yii\web\JsExpression $init
+     * @param string|JsExpression $init
      *
      * @return $this
      */
     public function setInit($init)
     {
-        if (!($init instanceof \yii\web\JsExpression)) {
-            $init = new \yii\web\JsExpression($init);
+        if (!($init instanceof JsExpression)) {
+            $init = new JsExpression($init);
         }
 
         $this->_init = $init;
