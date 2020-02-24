@@ -114,23 +114,22 @@ class RequireJs extends Loader
             list(, $this->libraryUrl) = $assetManager->publish($this->libraryPath);
         }
 
-        $requireOptions = [
-            'position' => View::POS_END
-        ];
+        $requireConfig = $this->renderRequireConfig();
+        $requireOptions = ['position' => View::POS_HEAD];
 
         if ($this->main === false) {
-            $view->registerJs($code, $requireOptions['position']);
+            $view->registerJs($code, View::POS_END);
+            $view->registerJs($requireConfig, View::POS_HEAD);
         } else {
             $requireOptions['async'] = 'async';
             $requireOptions['defer'] = 'defer';
 
-            $main = $this->resolveMainScript($this->main, $code);
+            $main = $this->resolveMainScript($this->main, "{$requireConfig};\n{$code}");
 
             list(, $requireOptions['data-main']) = $assetManager->publish($main);
         }
 
         $view->registerJsFile($this->libraryUrl, $requireOptions);
-        $view->registerJs($this->renderRequireConfig(), View::POS_HEAD);
     }
 
     /**
@@ -143,7 +142,7 @@ class RequireJs extends Loader
         $config = $this->getConfig()->toArray();
         $config = Json::encode((object)array_filter($config));
 
-        return "var require = {$config};";
+        return "require.config({$config});";
     }
 
     /**

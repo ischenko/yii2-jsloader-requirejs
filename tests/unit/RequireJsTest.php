@@ -133,12 +133,13 @@ class RequireJsTest extends Unit
             $loader = $this->mockLoader([
                 'main' => false,
                 'view' => $this->tester->mockView([
+                    'registerJs' => Expected::exactly(2),
                     'registerJsFile' => Expected::once(function ($path, $options) {
                         verify($path)->equals('/require.js');
                         verify($options)->hasKey('position');
                         verify($options)->hasntKey('defer');
                         verify($options)->hasntKey('async');
-                        verify($options['position'])->equals(View::POS_END);
+                        verify($options['position'])->equals(View::POS_HEAD);
                     }),
                     'assetManager' => $this->makeEmpty('yii\web\AssetManager', [
                         'publish' => Expected::once(function ($path) {
@@ -150,7 +151,6 @@ class RequireJsTest extends Unit
             ]);
 
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
-
             $publishRequireJs->invokeArgs($loader, ['code']);
         });
 
@@ -171,14 +171,13 @@ class RequireJsTest extends Unit
             ]);
 
             $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
-
             $publishRequireJs->invokeArgs($loader, ['code']);
         });
 
         $this->specify('it registers previously rendered JS code in the view', function () {
             $data = [
                 [View::POS_END, "code"],
-                [View::POS_HEAD, "var require = {};"]
+                [View::POS_HEAD, "require.config({});"]
             ];
 
             $loader = $this->mockLoader([
@@ -209,21 +208,23 @@ class RequireJsTest extends Unit
                     'main' => $main,
                     'libraryUrl' => '/require.js',
                     'view' => $this->tester->mockView([
-                        'registerJs' => Expected::once(),
+                        'registerJs' => Expected::never(),
                         'registerJsFile' => Expected::once(function ($file, $options) use ($expectedMain) {
                             verify($file)->equals('/require.js');
                             verify($options)->hasKey('position');
                             verify($options)->hasKey('async');
                             verify($options)->hasKey('defer');
-                            verify($options['position'])->equals(View::POS_END);
+                            verify($options['position'])->equals(View::POS_HEAD);
                             verify($options)->hasKey('data-main');
                             verify($options['data-main'])->equals($expectedMain);
                         }),
                         'assetManager' => $this->makeEmpty('yii\web\AssetManager', [
                             'publish' => Expected::exactly($expectedPublish, function ($path) use ($expectedMain) {
-                                verify($path)->equals(Yii::getAlias('@runtime/jsloader/' . ltrim($expectedMain,
-                                        DIRECTORY_SEPARATOR)));
-                                verify("code")->equalsFile(Yii::getAlias($path));
+
+                                verify($path)->equals(Yii::getAlias(
+                                    '@runtime/jsloader/' . ltrim($expectedMain, DIRECTORY_SEPARATOR)));
+
+                                verify("require.config({});;\ncode")->equalsFile(Yii::getAlias($path));
                                 return [null, '/' . basename($path)];
                             })
                         ])
@@ -231,16 +232,15 @@ class RequireJsTest extends Unit
                 ]);
 
                 $publishRequireJs = $this->tester->getMethod($loader, 'publishRequireJs');
-
                 $publishRequireJs->invokeArgs($loader, ['code']);
             }, [
                 'examples' => [
-                    [null, '/' . md5('code') . '.js', 1],
-                    ['', '/' . md5('code') . '.js', 1],
-                    [' ', '/' . md5('code') . '.js', 1],
+                    [null, '/' . md5("require.config({});;\ncode") . '.js', 1],
+                    ['', '/' . md5("require.config({});;\ncode") . '.js', 1],
+                    [' ', '/' . md5("require.config({});;\ncode") . '.js', 1],
                     [
                         function ($code) {
-                            verify($code)->equals('code');
+                            verify($code)->equals("require.config({});;\ncode");
                             return '/main_from_callable.js';
                         },
                         '/main_from_callable.js',
@@ -290,12 +290,12 @@ class RequireJsTest extends Unit
     public function providerRenderRequireConfigOptions()
     {
         return [
-            [[], 'var require = {};'],
-            [['paths' => []], 'var require = {};'],
-            [['paths' => ['test' => 'file']], 'var require = {"paths":{"test":"file"}};'],
+            [[], 'require.config({});'],
+            [['paths' => []], 'require.config({});'],
+            [['paths' => ['test' => 'file']], 'require.config({"paths":{"test":"file"}});'],
             [
                 ['paths' => ['test' => 'file'], 'shim' => ['test' => ['deps' => ['file2']]]],
-                'var require = {"paths":{"test":"file"},"shim":{"test":{"deps":["file2"]}}};'
+                'require.config({"paths":{"test":"file"},"shim":{"test":{"deps":["file2"]}}});'
             ],
         ];
     }
