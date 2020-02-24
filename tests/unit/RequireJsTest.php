@@ -122,7 +122,7 @@ class RequireJsTest extends Unit
                             ['getFiles' => ['file' => []]])
                     ]),
                 ],
-                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(document).ready(function() {\ntest\n});\nrequire([\"/file1\"], function() {\nload code block\n});\n});\n});"
+                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(function() {\ntest\n});\nrequire([\"/file1\"], function() {\nload code block\n});\n});\n});"
             ]
         ];
     }
