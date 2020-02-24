@@ -7,7 +7,9 @@
 
 namespace ischenko\yii2\jsloader\requirejs;
 
-use yii\base\InvalidParamException;
+use ischenko\yii2\jsloader\ModuleInterface;
+use yii\base\InvalidArgumentException;
+use yii\helpers\ArrayHelper;
 use yii\web\JsExpression;
 
 /**
@@ -26,7 +28,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     /**
      * @var JsExpression
      */
-    private $_init;
+    private $initScript;
 
     /**
      * @var array
@@ -34,37 +36,11 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     private $fallbackFiles = [];
 
     /**
-     * Sets value for the exports section of shim config
-     *
-     * @param string|null $exports
-     * @return $this
-     *
-     * @throws InvalidParamException
-     *
-     * @see http://requirejs.org/docs/api.html#config-shim
-     */
-    public function setExports($exports)
-    {
-        if ($exports === null) {
-            $this->exports = null;
-        } else {
-            if (!is_string($exports)) {
-                throw new InvalidParamException('Exports must be a string');
-            }
-
-            $this->exports = trim($exports);
-            $this->exports = $this->exports ?: null;
-        }
-
-        return $this;
-    }
-
-    /**
      * @return JsExpression
      */
     public function getInit()
     {
-        return $this->_init;
+        return $this->initScript;
     }
 
     /**
@@ -78,7 +54,7 @@ class Module extends \ischenko\yii2\jsloader\base\Module
             $init = new JsExpression($init);
         }
 
-        $this->_init = $init;
+        $this->initScript = $init;
 
         return $this;
     }
@@ -89,6 +65,32 @@ class Module extends \ischenko\yii2\jsloader\base\Module
     public function getExports()
     {
         return $this->exports;
+    }
+
+    /**
+     * Sets value for the exports section of shim config
+     *
+     * @param string|null $exports
+     * @return $this
+     *
+     * @throws InvalidArgumentException
+     *
+     * @see http://requirejs.org/docs/api.html#config-shim
+     */
+    public function setExports($exports)
+    {
+        if ($exports === null) {
+            $this->exports = null;
+        } else {
+            if (!is_string($exports)) {
+                throw new InvalidArgumentException('Exports must be a string');
+            }
+
+            $this->exports = trim($exports);
+            $this->exports = $this->exports ?: null;
+        }
+
+        return $this;
     }
 
     /**
@@ -131,14 +133,12 @@ class Module extends \ischenko\yii2\jsloader\base\Module
      * @param array $options options for a module. Loads settings from requirejs key
      * @return $this
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): ModuleInterface
     {
-        if (isset($options['requirejs'])) {
-            foreach ((array)$options['requirejs'] as $key => $value) {
-                $this->$key = $value;
-            }
+        $rjsOptions = ArrayHelper::remove($options, 'requirejs', []);
 
-            unset($options['requirejs']);
+        foreach ($rjsOptions as $key => $value) {
+            $this->$key = $value;
         }
 
         return parent::setOptions($options);

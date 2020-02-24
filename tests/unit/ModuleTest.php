@@ -72,7 +72,7 @@ class ModuleTest extends Unit
         ]);
 
         // it throws an exception if value is not a string
-        $this->assertThrows('yii\base\InvalidParamException', function () {
+        $this->assertThrows('yii\base\InvalidArgumentException', function () {
             $this->module->setExports([]);
         });
     }

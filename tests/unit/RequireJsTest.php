@@ -22,23 +22,6 @@ class RequireJsTest extends Unit
      */
     protected $tester;
 
-    protected function _before()
-    {
-        parent::_before();
-    }
-
-    protected function mockLoader($params = [])
-    {
-        if (isset($params['view'])) {
-            $view = $params['view'];
-            unset($params['view']);
-        } else {
-            $view = $this->tester->mockView();
-        }
-
-        return $this->construct('ischenko\yii2\jsloader\RequireJs', [$view], $params);
-    }
-
     /** Tests go below */
 
     public function testInstance()
@@ -121,7 +104,7 @@ class RequireJsTest extends Unit
                             ['getFiles' => ['file' => []]])
                     ]),
                 ],
-                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"\\/file1\"], function() {\n\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
+                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"/file1\"], function() {\n\nrequire([\"/file1\"], function() {\nload code block\n});\n});\n});"
             ],
             [
                 [
@@ -139,7 +122,7 @@ class RequireJsTest extends Unit
                             ['getFiles' => ['file' => []]])
                     ]),
                 ],
-                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(document).ready(function() {\ntest\n});\nrequire([\"\\/file1\"], function() {\nload code block\n});\n});\n});"
+                "require([\"mod\"], function() {\nbegin code block\nend code block\nrequire([\"ready\"], function() {\njQuery(document).ready(function() {\ntest\n});\nrequire([\"/file1\"], function() {\nload code block\n});\n});\n});"
             ]
         ];
     }
@@ -237,8 +220,9 @@ class RequireJsTest extends Unit
                             verify($options['data-main'])->equals($expectedMain);
                         }),
                         'assetManager' => $this->makeEmpty('yii\web\AssetManager', [
-                            'publish' => Expected::exactly($expectedPublish, function ($path) {
-                                verify($path)->equals(Yii::getAlias('@runtime/jsloader/' . md5('code') . '.js'));
+                            'publish' => Expected::exactly($expectedPublish, function ($path) use ($expectedMain) {
+                                verify($path)->equals(Yii::getAlias('@runtime/jsloader/' . ltrim($expectedMain,
+                                        DIRECTORY_SEPARATOR)));
                                 verify("code")->equalsFile(Yii::getAlias($path));
                                 return [null, '/' . basename($path)];
                             })
@@ -254,7 +238,15 @@ class RequireJsTest extends Unit
                     [null, '/' . md5('code') . '.js', 1],
                     ['', '/' . md5('code') . '.js', 1],
                     [' ', '/' . md5('code') . '.js', 1],
-                    ['/main.js', '/main.js', 0],
+                    [
+                        function ($code) {
+                            verify($code)->equals('code');
+                            return '/main_from_callable.js';
+                        },
+                        '/main_from_callable.js',
+                        1
+                    ],
+                    ['/main.js', '/main.js', 1],
                 ]
             ]);
 
@@ -306,5 +298,22 @@ class RequireJsTest extends Unit
                 'var require = {"paths":{"test":"file"},"shim":{"test":{"deps":["file2"]}}};'
             ],
         ];
+    }
+
+    protected function _before()
+    {
+        parent::_before();
+    }
+
+    protected function mockLoader($params = [])
+    {
+        if (isset($params['view'])) {
+            $view = $params['view'];
+            unset($params['view']);
+        } else {
+            $view = $this->tester->mockView();
+        }
+
+        return $this->construct('ischenko\yii2\jsloader\RequireJs', [$view], $params);
     }
 }

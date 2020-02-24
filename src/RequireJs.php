@@ -12,6 +12,7 @@ use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\requirejs\Config;
 use ischenko\yii2\jsloader\requirejs\JsRenderer;
 use RuntimeException;
+use yii\di\Instance;
 use yii\helpers\Json;
 use yii\web\View;
 
@@ -36,19 +37,31 @@ class RequireJs extends Loader
     /**
      * @see http://requirejs.org/docs/api.html#data-main
      *
-     * @var string|false URL of script file that will be used as value for the data-main entry. FALSE means do not use the data-main entry.
+     * @var string|callable|false URL of script file that will be used as value for the data-main entry. FALSE means do not use the data-main entry.
      */
     public $main;
+
+    /**
+     * @var string|array|JsRendererInterface
+     */
+    public $renderer = JsRenderer::class;
 
     /**
      * @var Config
      */
     private $config;
 
+    public function init()
+    {
+        parent::init();
+
+        $this->renderer = Instance::ensure($this->renderer, JsRendererInterface::class);
+    }
+
     /**
      * @return Config
      */
-    public function getConfig()
+    public function getConfig(): ConfigInterface
     {
         if (!$this->config) {
             $this->config = new Config();
@@ -64,9 +77,9 @@ class RequireJs extends Loader
      */
     protected function doRender(array $jsExpressions)
     {
-        krsort($jsExpressions);
-
         $resultJsCode = '';
+
+        krsort($jsExpressions);
 
         foreach ($jsExpressions as $position => $jsExpression) {
             if (!empty($resultJsCode)) {
@@ -83,7 +96,7 @@ class RequireJs extends Loader
                 $expression->setExpression("{$code}\n{$resultJsCode}");
             }
 
-            $resultJsCode = $jsExpression->render(new JsRenderer());
+            $resultJsCode = $jsExpression->render($this->renderer);
         }
 
         $this->publishRequireJs($resultJsCode);
@@ -110,11 +123,10 @@ class RequireJs extends Loader
         } else {
             $requireOptions['async'] = 'async';
             $requireOptions['defer'] = 'defer';
-            $requireOptions['data-main'] = trim($this->main);
 
-            if (empty($requireOptions['data-main'])) {
-                list(, $requireOptions['data-main']) = $assetManager->publish($this->writeFileContent($code));
-            }
+            $main = $this->resolveMainScript($this->main, $code);
+
+            list(, $requireOptions['data-main']) = $assetManager->publish($main);
         }
 
         $view->registerJsFile($this->libraryUrl, $requireOptions);
@@ -145,16 +157,15 @@ class RequireJs extends Loader
     }
 
     /**
+     * @param string $filePath
      * @param string $content
      *
      * @return string full path to a file
      *
      * @throws RuntimeException
      */
-    private function writeFileContent($content)
+    private function writeFileContent($filePath, $content)
     {
-        $filePath = $this->getRuntimePath() . DIRECTORY_SEPARATOR . md5($content) . '.js';
-
         if (!file_exists($filePath)) {
             if (@file_put_contents($filePath, $content, LOCK_EX) === false) {
                 throw new RuntimeException("Failed to write data into a file \"$filePath\"");
@@ -162,5 +173,26 @@ class RequireJs extends Loader
         }
 
         return $filePath;
+    }
+
+    /**
+     * @param mixed $main
+     * @param string $code
+     * @return string
+     */
+    private function resolveMainScript($main, $code): string
+    {
+        if (is_callable($main)) {
+            $main = call_user_func($main, $code, $this);
+        }
+
+        if (empty($main = trim($main))) {
+            $main = md5($code) . '.js';
+        }
+
+        $path = $this->getRuntimePath()
+            . DIRECTORY_SEPARATOR . ltrim($main, DIRECTORY_SEPARATOR);
+
+        return $this->writeFileContent($path, $code);
     }
 }

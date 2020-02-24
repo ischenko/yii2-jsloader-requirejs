@@ -19,7 +19,7 @@
   "require": {
     "php": ">=7.1",
     "bower-asset/requirejs": "^2.3",
-    "ischenko/yii2-jsloader": "~1.2.1"
+    "ischenko/yii2-jsloader": "~1.2.2"
   },
   "require-dev": {
     "codeception/verify": "~1.2",

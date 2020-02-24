@@ -9,6 +9,7 @@ namespace ischenko\yii2\jsloader\requirejs;
 
 use ischenko\yii2\jsloader\helpers\JsExpression;
 use ischenko\yii2\jsloader\JsRendererInterface;
+use yii\helpers\Json;
 
 /**
  * Implementation of a JsRenderer for RequireJS
@@ -24,21 +25,22 @@ class JsRenderer implements JsRendererInterface
      * @param JsExpression $expression
      * @return string
      */
-    public function renderJsExpression(JsExpression $expression)
+    public function renderJsExpression(JsExpression $expression): string
     {
-        if (!$expression->getExpression()
-            && !$expression->getDependencies()
-        ) {
+        $code = $expression->getExpression();
+        $dependencies = $expression->getDependencies();
+
+        if (!$code && !$dependencies) {
             return '';
         }
 
-        if (($code = $expression->getExpression()) instanceof JsExpression) {
+        if ($code instanceof JsExpression) {
             $code = $this->renderJsExpression($code);
         }
 
-        list($modules, $injects) = $this->extractRequireJsModules($expression->getDependencies());
+        list($modules, $injects) = $this->extractRequireJsModules($dependencies);
 
-        return $this->renderRequireJsCode($code, $modules, $injects);
+        return $this->renderRequireJsCode($code, $modules, $injects) ?: '';
     }
 
     /**
@@ -93,7 +95,7 @@ class JsRenderer implements JsRendererInterface
             }
 
             $pad++;
-            $modules[] = json_encode($dependency->getAlias());
+            $modules[] = Json::encode($dependency->getAlias());
         }
 
         return [$modules, $injects];

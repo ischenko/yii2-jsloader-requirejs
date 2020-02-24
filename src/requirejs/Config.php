@@ -23,11 +23,6 @@ use yii\web\JsExpression;
 class Config extends \ischenko\yii2\jsloader\base\Config
 {
     /**
-     * @var array a list of other configuration options
-     */
-    protected $attributes = [];
-
-    /**
      * @var array a list of valid options
      *
      * TODO: create setter and getter for map and config
@@ -44,6 +39,25 @@ class Config extends \ischenko\yii2\jsloader\base\Config
         'scriptType' => 1,
         'skipDataMain' => 1,
     ];
+    /**
+     * @var array a list of other configuration options
+     */
+    protected $attributes = [];
+
+    /**
+     * Common getter for configuration options
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (isset(self::$validOptions[$name])) {
+            return $this->attributes[$name] ?? null;
+        }
+
+        return parent::__get($name);
+    }
 
     /**
      * Common setter for configuration options
@@ -59,22 +73,6 @@ class Config extends \ischenko\yii2\jsloader\base\Config
         }
 
         parent::__set($name, $value);
-    }
-
-    /**
-     * Common getter for configuration options
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        if (isset(self::$validOptions[$name])) {
-            return isset($this->attributes[$name])
-                ? $this->attributes[$name] : null;
-        }
-
-        return parent::__get($name);
     }
 
     /**
@@ -100,8 +98,7 @@ class Config extends \ischenko\yii2\jsloader\base\Config
      */
     public function getCallback()
     {
-        return isset($this->attributes['callback'])
-            ? $this->attributes['callback'] : null;
+        return $this->attributes['callback'] ?? null;
     }
 
     /**
@@ -109,13 +106,9 @@ class Config extends \ischenko\yii2\jsloader\base\Config
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
-        $config = [];
-
-        foreach ($this->attributes as $option => $value) {
-            $config[$option] = $value;
-        }
+        $config = $this->attributes;
 
         if (!empty($this->baseUrl)) {
             $config['baseUrl'] = $this->baseUrl;
@@ -145,7 +138,7 @@ class Config extends \ischenko\yii2\jsloader\base\Config
      *
      * @return Module
      */
-    public function addModule($module)
+    public function addModule($module): ModuleInterface
     {
         if (!($module instanceof ModuleInterface)) {
             $module = new Module($module);
