@@ -153,7 +153,7 @@ class RequireJs extends Loader
      */
     private function encloseJqueryReady($code)
     {
-        return "jQuery(document).ready(function() {\n{$code}\n});";
+        return "jQuery(function() {\n{$code}\n});";
     }
 
     /**
