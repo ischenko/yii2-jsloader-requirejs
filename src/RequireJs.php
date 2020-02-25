@@ -139,8 +139,14 @@ class RequireJs extends Loader
      */
     protected function renderRequireConfig()
     {
+        $jsonOptions = 320;
+
+        if (YII_DEBUG) {
+            $jsonOptions |= JSON_PRETTY_PRINT;
+        }
+
         $config = $this->getConfig()->toArray();
-        $config = Json::encode((object)array_filter($config));
+        $config = Json::encode((object)array_filter($config), $jsonOptions);
 
         return "require.config({$config});";
     }
