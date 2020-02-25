@@ -15,22 +15,14 @@ class ConfigTest extends Unit
     use Specify;
 
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @var Config
      * @specify
      */
     public $config;
-
-    protected function _before()
-    {
-        parent::_before();
-
-        $this->config = new Config();
-    }
+    /**
+     * @var UnitTester
+     */
+    protected $tester;
 
     /** Tests go below */
 
@@ -135,6 +127,7 @@ class ConfigTest extends Unit
 
             $testModule->addFile('another_file.js');
             $testModule->addFile('yet_another_file.js');
+            $testModule->addFile('versioned_file.js?v=123123123');
             $testModule->setOptions(['baseUrl' => '/base/url']);
             $testModule2->setOptions(['baseUrl' => '/base/url']);
 
@@ -166,7 +159,7 @@ class ConfigTest extends Unit
             verify($this->config->toArray())->equals([
                 'shim' => [
                     'test' => [
-                        'deps' => ['test2', 'test2.js', 'another_file.js']
+                        'deps' => ['test2', 'test2.js', 'another_file.js', 'yet_another_file.js']
                     ],
                     'test2' => [
                         'exports' => 'library',
@@ -187,10 +180,17 @@ class ConfigTest extends Unit
                     ],
                     't1' => [
                         'deps' => []
+                    ],
+                    'yet_another_file.js' => [
+                        'deps' => [
+                            'test2',
+                            'test2.js',
+                            'another_file.js'
+                        ]
                     ]
                 ],
                 'paths' => [
-                    'test' => ['yet_another_file'],
+                    'test' => ['versioned_file'],
                     'test2' => ['test'],
                     'test3' => ['t1', 't2', 't3'],
                     'TESTING4' => ['t3']
@@ -272,5 +272,12 @@ class ConfigTest extends Unit
             verify($this->config->callback)->isInstanceOf(JsExpression::class);
             verify($this->config->callback->expression)->equals('alert(1);');
         });
+    }
+
+    protected function _before()
+    {
+        parent::_before();
+
+        $this->config = new Config();
     }
 }

@@ -308,6 +308,6 @@ class Config extends \ischenko\yii2\jsloader\base\Config
      */
     private function removeJsExtension($file)
     {
-        return preg_replace('/\.js$/', '', $file);
+        return preg_replace('/\.js(?:\?.*)?$/', '', $file);
     }
 }
