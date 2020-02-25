@@ -292,10 +292,28 @@ class RequireJsTest extends Unit
         return [
             [[], 'require.config({});'],
             [['paths' => []], 'require.config({});'],
-            [['paths' => ['test' => 'file']], 'require.config({"paths":{"test":"file"}});'],
+            [
+                ['paths' => ['test' => 'file']],
+                "require.config({
+    \"paths\": {
+        \"test\": \"file\"
+    }
+});"
+            ],
             [
                 ['paths' => ['test' => 'file'], 'shim' => ['test' => ['deps' => ['file2']]]],
-                'require.config({"paths":{"test":"file"},"shim":{"test":{"deps":["file2"]}}});'
+                "require.config({
+    \"paths\": {
+        \"test\": \"file\"
+    },
+    \"shim\": {
+        \"test\": {
+            \"deps\": [
+                \"file2\"
+            ]
+        }
+    }
+});"
             ],
         ];
     }
